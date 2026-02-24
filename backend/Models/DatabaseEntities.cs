@@ -1,451 +1,343 @@
-///=====================================================================
-/// Database Entity Models
-/// Mapping các bảng SQL Server sang C# entities
-/// =====================================================================
-
+// =============================================================================
+// IScream — Database Entity Models + DTOs
+// Schema: public_data (Azure SQL)
+// Tables: USERS, MEMBERSHIP_PLANS, PAYMENTS, RECIPES, ITEMS,
+//         ITEM_ORDERS, MEMBERSHIP_SUBSCRIPTIONS, FEEDBACKS, RECIPE_SUBMISSIONS
+// =============================================================================
 #nullable enable
 
-using System;
-using System.Collections.Generic;
-
-namespace IScream.Core.Entities
+namespace IScream.Models
 {
-    #region Auth Module
+    // =========================================================================
+    // ENTITIES — 1-to-1 with SQL tables
+    // =========================================================================
 
-    /// <summary>
-    /// Thông tin người dùng cơ bản
-    /// </summary>
-    public class User
+    /// <summary>public_data.USERS</summary>
+    public class AppUser
     {
-        public long Id { get; set; }
-        public string FullName { get; set; } = null!;
+        public Guid Id { get; set; }
+        public string Username { get; set; } = null!;
         public string? Email { get; set; }
-        public string? Phone { get; set; }
-        public string Status { get; set; } = "ACTIVE"; // ACTIVE/INACTIVE/BLOCKED
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
-
-        // Navigation
-        public virtual ICollection<AuthAccount> AuthAccounts { get; set; } = new List<AuthAccount>();
-        public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
-        public virtual ICollection<Subscription> Subscriptions { get; set; } = new List<Subscription>();
-    }
-
-    /// <summary>
-    /// Tài khoản đăng nhập (Facebook/Google/Local)
-    /// </summary>
-    public class AuthAccount
-    {
-        public long Id { get; set; }
-        public long UserId { get; set; }
-        public string Provider { get; set; } = null!; // facebook/google/local
-        public string ProviderUserId { get; set; } = null!; // ID từ provider
-        public string? AccessToken { get; set; }
-        public string? RefreshToken { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        // Navigation
-        public virtual User User { get; set; } = null!;
-    }
-
-    #endregion
-
-    #region Catalog Module
-
-    /// <summary>
-    /// Sản phẩm (Kem/Công thức/Membership)
-    /// </summary>
-    public class Product
-    {
-        public long Id { get; set; }
-        public string Type { get; set; } = null!; // ICECREAM/RECIPE/MEMBERSHIP
-        public string Name { get; set; } = null!;
-        public string Slug { get; set; } = null!;
-        public string? ShortDesc { get; set; }
-        public string? FullDesc { get; set; }
-        public decimal Price { get; set; } = 0;
-        public string Currency { get; set; } = "VND";
+        public string PasswordHash { get; set; } = null!;
+        public string? FullName { get; set; }
+        public string Role { get; set; } = "USER";   // USER | ADMIN
+        public DateTime CreatedAt { get; set; }
         public bool IsActive { get; set; } = true;
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
-
-        // Navigation
-        public virtual ICollection<ProductMedia> Medias { get; set; } = new List<ProductMedia>();
-        public virtual Recipe? Recipe { get; set; }
-        public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
     }
 
-    /// <summary>
-    /// Media cho sản phẩm (ảnh/video)
-    /// </summary>
-    public class ProductMedia
+    /// <summary>public_data.MEMBERSHIP_PLANS</summary>
+    public class MembershipPlan
     {
-        public long Id { get; set; }
-        public long ProductId { get; set; }
-        public string MediaType { get; set; } = null!; // IMAGE/VIDEO
-        public string Url { get; set; } = null!;
-        public bool IsCover { get; set; } = false;
-        public int Position { get; set; } = 0;
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        // Navigation
-        public virtual Product Product { get; set; } = null!;
-    }
-
-    #endregion
-
-    #region Content Module
-
-    /// <summary>
-    /// Công thức
-    /// </summary>
-    public class Recipe
-    {
-        public long Id { get; set; }
-        public long ProductId { get; set; }
-        public string Title { get; set; } = null!;
-        public string? ShortDesc { get; set; }
-        public string? Ingredients { get; set; }
-        public string? Steps { get; set; }
-        public string Visibility { get; set; } = "PAID"; // FREE/PAID
-        public string Status { get; set; } = "DRAFT"; // DRAFT/PUBLISHED/ARCHIVED
-        public long? CreatedByUserId { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
-
-        // Navigation
-        public virtual Product Product { get; set; } = null!;
-        public virtual User? CreatedByUser { get; set; }
-        public virtual ICollection<RecipeMedia> Medias { get; set; } = new List<RecipeMedia>();
-        public virtual ICollection<RecipeAccess> Accesses { get; set; } = new List<RecipeAccess>();
-        public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
-        public virtual TopRecipe? TopRecipe { get; set; }
-    }
-
-    /// <summary>
-    /// Media cho công thức (ảnh/video)
-    /// TRAILER: video preview
-    /// REFERENCE: video hướng dẫn (tối thiểu 1)
-    /// GALLERY: ảnh/video bổ sung
-    /// </summary>
-    public class RecipeMedia
-    {
-        public long Id { get; set; }
-        public long RecipeId { get; set; }
-        public string MediaType { get; set; } = null!; // IMAGE/VIDEO
-        public string MediaRole { get; set; } = null!; // TRAILER/REFERENCE/GALLERY
-        public string Url { get; set; } = null!;
-        public int Position { get; set; } = 0;
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        // Navigation
-        public virtual Recipe Recipe { get; set; } = null!;
-    }
-
-    /// <summary>
-    /// Quyền xem công thức (từ mua order/subscription)
-    /// </summary>
-    public class RecipeAccess
-    {
-        public long Id { get; set; }
-        public long UserId { get; set; }
-        public long RecipeId { get; set; }
-        public string SourceType { get; set; } = null!; // ORDER/SUBSCRIPTION/ADMIN_GRANT
-        public long SourceId { get; set; }
-        public DateTime GrantedAt { get; set; } = DateTime.UtcNow;
-        public DateTime? ExpiresAt { get; set; }
-
-        // Navigation
-        public virtual User User { get; set; } = null!;
-        public virtual Recipe Recipe { get; set; } = null!;
-    }
-
-    /// <summary>
-    /// Đánh giá (review)
-    /// IsVerified = true nếu user đã mua + dùng (product) hoặc có access (recipe)
-    /// </summary>
-    public class Review
-    {
-        public long Id { get; set; }
-        public long UserId { get; set; }
-        public string TargetType { get; set; } = null!; // PRODUCT/RECIPE
-        public long TargetId { get; set; }
-        public int Rating { get; set; } // 1-5
-        public string? Content { get; set; }
-        public string Channel { get; set; } = "IN_APP"; // IN_APP/EXTERNAL
-        public bool IsVerified { get; set; } = false;
-        public DateTime? VerifiedAt { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        // Navigation
-        public virtual User User { get; set; } = null!;
-    }
-
-    /// <summary>
-    /// Top recipes hiển thị trên trang chủ
-    /// </summary>
-    public class TopRecipe
-    {
-        public long Id { get; set; }
-        public long RecipeId { get; set; }
-        public decimal RankScore { get; set; } = 0;
-        public DateTime FeaturedFrom { get; set; } = DateTime.UtcNow;
-        public DateTime? FeaturedTo { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        // Navigation
-        public virtual Recipe Recipe { get; set; } = null!;
-    }
-
-    #endregion
-
-    #region Sales Module
-
-    /// <summary>
-    /// Đơn hàng
-    /// </summary>
-    public class Order
-    {
-        public long Id { get; set; }
-        public long UserId { get; set; }
-        public string OrderCode { get; set; } = null!;
-        public string Status { get; set; } = "PENDING"; // PENDING/PAID/COMPLETED/CANCELLED
-        public decimal TotalAmount { get; set; } = 0;
+        public int Id { get; set; }
+        public string Code { get; set; } = null!;
+        public decimal Price { get; set; }
         public string Currency { get; set; } = "VND";
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
-
-        // Navigation
-        public virtual User User { get; set; } = null!;
-        public virtual ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
-        public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
-        public virtual Shipment? Shipment { get; set; }
+        public int DurationDays { get; set; } = 30;
+        public bool IsActive { get; set; } = true;
     }
 
-    /// <summary>
-    /// Dòng sản phẩm trong đơn
-    /// </summary>
-    public class OrderItem
-    {
-        public long Id { get; set; }
-        public long OrderId { get; set; }
-        public long ProductId { get; set; }
-        public int Quantity { get; set; } = 1;
-        public decimal UnitPrice { get; set; } = 0;
-        public string ItemTypeSnapshot { get; set; } = null!; // ICECREAM/RECIPE/MEMBERSHIP
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        // Navigation
-        public virtual Order Order { get; set; } = null!;
-        public virtual Product Product { get; set; } = null!;
-        public virtual ProductUsage? Usage { get; set; }
-    }
-
-    /// <summary>
-    /// Ghi nhận thanh toán
-    /// </summary>
+    /// <summary>public_data.PAYMENTS — Type: MEMBERSHIP | ORDER</summary>
     public class Payment
     {
-        public long Id { get; set; }
-        public long OrderId { get; set; }
-        public string Provider { get; set; } = null!; // MOMO/ZALOPAY/STRIPE/etc
+        public Guid Id { get; set; }
+        public Guid? UserId { get; set; }
         public decimal Amount { get; set; }
-        public string Status { get; set; } = "INIT"; // INIT/SUCCESS/FAILED
-        public string? TransactionRef { get; set; }
-        public DateTime? PaidAt { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        // Navigation
-        public virtual Order Order { get; set; } = null!;
+        public string Currency { get; set; } = "VND";
+        public string Type { get; set; } = null!;
+        public string Status { get; set; } = "INIT";  // INIT | SUCCESS | FAILED
+        public DateTime CreatedAt { get; set; }
     }
 
-    /// <summary>
-    /// Thông tin giao hàng
-    /// </summary>
-    public class Shipment
+    /// <summary>public_data.RECIPES</summary>
+    public class Recipe
     {
-        public long Id { get; set; }
-        public long OrderId { get; set; }
-        public string ReceiverName { get; set; } = null!;
-        public string Phone { get; set; } = null!;
-        public string AddressLine { get; set; } = null!;
-        public string? Ward { get; set; }
-        public string? District { get; set; }
-        public string? City { get; set; }
-        public string ShippingStatus { get; set; } = "READY"; // READY/SHIPPED/DELIVERED/CANCELLED
-        public DateTime? ShippedAt { get; set; }
-        public DateTime? DeliveredAt { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        // Navigation
-        public virtual Order Order { get; set; } = null!;
+        public Guid Id { get; set; }
+        public string FlavorName { get; set; } = null!;
+        public string? ShortDescription { get; set; }
+        public string? Ingredients { get; set; }
+        public string? Procedure { get; set; }
+        public string? ImageUrl { get; set; }
+        public bool IsActive { get; set; } = true;
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
     }
 
-    /// <summary>
-    /// Quản lý sử dụng sản phẩm (chỉ cho kem)
-    /// PURCHASED: đã giao hàng
-    /// USED: user xác nhận đã dùng (có quyền review)
-    /// </summary>
-    public class ProductUsage
+    /// <summary>public_data.ITEMS</summary>
+    public class Item
     {
-        public long Id { get; set; }
-        public long UserId { get; set; }
-        public long OrderItemId { get; set; }
-        public string Status { get; set; } = "PURCHASED"; // PURCHASED/USED
-        public DateTime? UsedAt { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        // Navigation
-        public virtual User User { get; set; } = null!;
-        public virtual OrderItem OrderItem { get; set; } = null!;
+        public Guid Id { get; set; }
+        public string Title { get; set; } = null!;
+        public string? Description { get; set; }
+        public decimal Price { get; set; }
+        public string Currency { get; set; } = "VND";
+        public string? ImageUrl { get; set; }
+        public int Stock { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
     }
 
-    /// <summary>
-    /// Membership subscription
-    /// </summary>
-    public class Subscription
+    /// <summary>public_data.ITEM_ORDERS — TotalCost is computed (persisted) in DB</summary>
+    public class ItemOrder
     {
-        public long Id { get; set; }
-        public long UserId { get; set; }
-        public long ProductId { get; set; }
-        public string Status { get; set; } = "ACTIVE"; // ACTIVE/EXPIRED/CANCELLED
-        public DateTime StartAt { get; set; } = DateTime.UtcNow;
-        public DateTime? EndAt { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public Guid Id { get; set; }
+        public string OrderNo { get; set; } = null!;
+        public string CustomerName { get; set; } = null!;
+        public string? Email { get; set; }
+        public string? Phone { get; set; }
+        public string? Address { get; set; }
+        public Guid ItemId { get; set; }
+        public int Quantity { get; set; }
+        public decimal UnitPrice { get; set; }
+        public decimal TotalCost { get; set; }   // read-only (computed in DB)
+        public Guid? PaymentId { get; set; }
+        public string Status { get; set; } = "PENDING"; // PENDING | PAID | SHIPPED | DELIVERED | CANCELLED
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
 
-        // Navigation
-        public virtual User User { get; set; } = null!;
-        public virtual Product Product { get; set; } = null!;
+        // Joined fields (optional, for richer responses)
+        public string? ItemTitle { get; set; }
+        public string? ItemImageUrl { get; set; }
     }
 
-    #endregion
+    /// <summary>public_data.MEMBERSHIP_SUBSCRIPTIONS</summary>
+    public class MembershipSubscription
+    {
+        public Guid Id { get; set; }
+        public Guid UserId { get; set; }
+        public int PlanId { get; set; }
+        public Guid? PaymentId { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public string Status { get; set; } = "ACTIVE"; // ACTIVE | EXPIRED | CANCELLED
+        public DateTime CreatedAt { get; set; }
 
-    #region UGC Module
+        // Joined fields
+        public string? PlanCode { get; set; }
+        public decimal? PlanPrice { get; set; }
+    }
 
-    /// <summary>
-    /// User gửi công thức (cần admin duyệt)
-    /// </summary>
+    /// <summary>public_data.FEEDBACKS</summary>
+    public class Feedback
+    {
+        public Guid Id { get; set; }
+        public Guid? UserId { get; set; }
+        public string? Name { get; set; }
+        public string? Email { get; set; }
+        public string Message { get; set; } = null!;
+        public bool IsRegisteredUser { get; set; }
+        public DateTime CreatedAt { get; set; }
+    }
+
+    /// <summary>public_data.RECIPE_SUBMISSIONS</summary>
     public class RecipeSubmission
     {
-        public long Id { get; set; }
-        public long UserId { get; set; }
+        public Guid Id { get; set; }
+        public Guid? UserId { get; set; }
+        public string? Name { get; set; }
+        public string? Email { get; set; }
         public string Title { get; set; } = null!;
-        public string? Desc { get; set; }
+        public string? Description { get; set; }
         public string? Ingredients { get; set; }
         public string? Steps { get; set; }
-        public string Status { get; set; } = "PENDING"; // PENDING/APPROVED/REJECTED/PUBLISHED
-        public string? AdminNote { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime? ReviewedAt { get; set; }
-
-        // Navigation
-        public virtual User User { get; set; } = null!;
-        public virtual ICollection<SubmissionMedia> Medias { get; set; } = new List<SubmissionMedia>();
-        public virtual SubmissionReward? Reward { get; set; }
-    }
-
-    /// <summary>
-    /// Media cho submission
-    /// </summary>
-    public class SubmissionMedia
-    {
-        public long Id { get; set; }
-        public long SubmissionId { get; set; }
-        public string MediaType { get; set; } = null!; // IMAGE/VIDEO
-        public string Url { get; set; } = null!;
-        public int Position { get; set; } = 0;
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        // Navigation
-        public virtual RecipeSubmission Submission { get; set; } = null!;
-    }
-
-    /// <summary>
-    /// Thưởng cho submission được duyệt
-    /// </summary>
-    public class SubmissionReward
-    {
-        public long Id { get; set; }
-        public long SubmissionId { get; set; }
+        public string? ImageUrl { get; set; }
+        public string Status { get; set; } = "PENDING"; // PENDING | APPROVED | REJECTED
         public decimal? PrizeMoney { get; set; }
-        public string CertificateUrl { get; set; } = null!;
-        public DateTime? SentEmailAt { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        // Navigation
-        public virtual RecipeSubmission Submission { get; set; } = null!;
+        public string? CertificateUrl { get; set; }
+        public Guid? ReviewedByUserId { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime? ReviewedAt { get; set; }
     }
 
-    #endregion
+    // =========================================================================
+    // REQUEST DTOs
+    // =========================================================================
 
-    #region DTOs
+    public class RegisterRequest
+    {
+        public string Username { get; set; } = null!;
+        public string Password { get; set; } = null!;
+        public string? Email { get; set; }
+        public string? FullName { get; set; }
+    }
 
-    /// <summary>
-    /// DTO tạo đơn
-    /// </summary>
+    public class LoginRequest
+    {
+        /// <summary>Can be Username or Email</summary>
+        public string UsernameOrEmail { get; set; } = null!;
+        public string Password { get; set; } = null!;
+    }
+
+    public class UpdateProfileRequest
+    {
+        public string? FullName { get; set; }
+        public string? Email { get; set; }
+    }
+
+    public class ChangePasswordRequest
+    {
+        public string OldPassword { get; set; } = null!;
+        public string NewPassword { get; set; } = null!;
+    }
+
+    // --- Item DTOs ---
+    public class CreateItemRequest
+    {
+        public string Title { get; set; } = null!;
+        public string? Description { get; set; }
+        public decimal Price { get; set; }
+        public string Currency { get; set; } = "VND";
+        public string? ImageUrl { get; set; }
+        public int Stock { get; set; }
+    }
+
+    public class UpdateItemRequest
+    {
+        public string? Title { get; set; }
+        public string? Description { get; set; }
+        public decimal? Price { get; set; }
+        public string? ImageUrl { get; set; }
+        public int? Stock { get; set; }
+    }
+
+    // --- Recipe DTOs ---
+    public class CreateRecipeRequest
+    {
+        public string FlavorName { get; set; } = null!;
+        public string? ShortDescription { get; set; }
+        public string? Ingredients { get; set; }
+        public string? Procedure { get; set; }
+        public string? ImageUrl { get; set; }
+    }
+
+    public class UpdateRecipeRequest
+    {
+        public string? FlavorName { get; set; }
+        public string? ShortDescription { get; set; }
+        public string? Ingredients { get; set; }
+        public string? Procedure { get; set; }
+        public string? ImageUrl { get; set; }
+        public bool? IsActive { get; set; }
+    }
+
+    // --- Order DTOs ---
     public class CreateOrderRequest
     {
-        public long UserId { get; set; }
-        public string OrderCode { get; set; } = null!;
-        public decimal TotalAmount { get; set; }
-        public string? Currency { get; set; }
-        public List<OrderItemRequest>? Items { get; set; }
-    }
-
-    public class OrderItemRequest
-    {
-        public long ProductId { get; set; }
+        public string CustomerName { get; set; } = null!;
+        public string? Email { get; set; }
+        public string? Phone { get; set; }
+        public string? Address { get; set; }
+        public Guid ItemId { get; set; }
         public int Quantity { get; set; } = 1;
-        public decimal UnitPrice { get; set; }
     }
 
-    /// <summary>
-    /// DTO thanh toán
-    /// </summary>
-    public class PaymentRequest
+    public class UpdateOrderStatusRequest
     {
-        public long OrderId { get; set; }
-        public string Provider { get; set; } = null!;
+        public string Status { get; set; } = null!; // SHIPPED | DELIVERED | CANCELLED
+    }
+
+    // --- Payment DTOs ---
+    public class CreatePaymentRequest
+    {
+        public Guid? UserId { get; set; }
         public decimal Amount { get; set; }
-        public string? TransactionRef { get; set; }
+        public string Currency { get; set; } = "VND";
+        public string Type { get; set; } = null!; // MEMBERSHIP | ORDER
     }
 
-    /// <summary>
-    /// DTO tạo review
-    /// </summary>
-    public class CreateReviewRequest
+    public class ConfirmPaymentRequest
     {
-        public long UserId { get; set; }
-        public string TargetType { get; set; } = null!; // PRODUCT/RECIPE
-        public long TargetId { get; set; }
-        public int Rating { get; set; }
-        public string? Content { get; set; }
-        public string? Channel { get; set; }
+        /// <summary>Order or Subscription to link after payment SUCCESS</summary>
+        public Guid? LinkedEntityId { get; set; }
     }
 
-    /// <summary>
-    /// DTO gửi công thức UGC
-    /// </summary>
-    public class SubmitRecipeRequest
+    // --- Membership DTOs ---
+    public class SubscribeRequest
     {
-        public long UserId { get; set; }
+        public Guid UserId { get; set; }
+        public int PlanId { get; set; }
+        public Guid? PaymentId { get; set; }
+    }
+
+    // --- Feedback DTOs ---
+    public class CreateFeedbackRequest
+    {
+        public Guid? UserId { get; set; }
+        public string? Name { get; set; }
+        public string? Email { get; set; }
+        public string Message { get; set; } = null!;
+    }
+
+    // --- RecipeSubmission DTOs ---
+    public class CreateSubmissionRequest
+    {
+        public Guid? UserId { get; set; }
+        public string? Name { get; set; }
+        public string? Email { get; set; }
         public string Title { get; set; } = null!;
-        public string? Desc { get; set; }
+        public string? Description { get; set; }
         public string? Ingredients { get; set; }
         public string? Steps { get; set; }
-        public List<string>? MediaUrls { get; set; }
+        public string? ImageUrl { get; set; }
     }
 
-    /// <summary>
-    /// DTO response
-    /// </summary>
+    public class ReviewSubmissionRequest
+    {
+        public Guid AdminUserId { get; set; }
+        public bool Approve { get; set; }
+        public decimal? PrizeMoney { get; set; }
+        public string? CertificateUrl { get; set; }
+    }
+
+    // =========================================================================
+    // RESPONSE DTOs
+    // =========================================================================
+
+    public class LoginResponse
+    {
+        public string Token { get; set; } = null!;
+        public string TokenType { get; set; } = "Bearer";
+        public int ExpiresInSeconds { get; set; } = 28800; // 8 hours
+        public UserInfo User { get; set; } = null!;
+    }
+
+    public class UserInfo
+    {
+        public Guid Id { get; set; }
+        public string Username { get; set; } = null!;
+        public string? FullName { get; set; }
+        public string? Email { get; set; }
+        public string Role { get; set; } = null!;
+    }
+
+    public class PagedResult<T>
+    {
+        public List<T> Items { get; set; } = new();
+        public int Page { get; set; }
+        public int PageSize { get; set; }
+        public int Total { get; set; }
+        public int TotalPages => (int)Math.Ceiling((double)Total / PageSize);
+    }
+
     public class ApiResponse<T>
     {
         public bool Success { get; set; }
         public string? Message { get; set; }
         public T? Data { get; set; }
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+
+        public static ApiResponse<T> Ok(T data, string? message = null)
+            => new() { Success = true, Data = data, Message = message };
+
+        public static ApiResponse<T> Fail(string message)
+            => new() { Success = false, Message = message };
     }
 
-    #endregion
+    public class ApiResponse : ApiResponse<object>
+    {
+        public static ApiResponse OkEmpty(string? message = null)
+            => new() { Success = true, Message = message };
+
+        public static new ApiResponse Fail(string message)
+            => new() { Success = false, Message = message };
+    }
 }
