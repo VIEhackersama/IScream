@@ -6,7 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -65,6 +65,11 @@ namespace IScream.Data
         public SqlServerRepository(DatabaseConfig config)
         {
             _config = config ?? throw new ArgumentNullException(nameof(config));
+        }
+
+        private SqlParameter P(string name, object? value)
+        {
+            return new SqlParameter(name, value ?? DBNull.Value);
         }
 
         #region Database Helpers
@@ -148,10 +153,10 @@ namespace IScream.Data
         {
             var parameters = new[]
             {
-                new SqlParameter("@UserId", userId),
-                new SqlParameter("@OrderCode", orderCode),
-                new SqlParameter("@TotalAmount", totalAmount),
-                new SqlParameter("@Currency", currency)
+                P("@UserId", userId),
+                P("@OrderCode", orderCode),
+                P("@TotalAmount", totalAmount),
+                P("@Currency", currency)
             };
 
             var result = await ExecuteScalarInternalAsync<long>("sales.sp_CreateOrder", parameters);
@@ -162,24 +167,24 @@ namespace IScream.Data
         {
             var parameters = new[]
             {
-                new SqlParameter("@OrderId", orderId),
-                new SqlParameter("@ProductId", productId),
-                new SqlParameter("@Qty", quantity),
-                new SqlParameter("@UnitPrice", unitPrice)
+                P("@OrderId", orderId),
+                P("@ProductId", productId),
+                P("@Qty", quantity),
+                P("@UnitPrice", unitPrice)
             };
 
             var result = await ExecuteScalarInternalAsync<long>("sales.sp_AddOrderItem", parameters);
             return result;
         }
 
-        public async Task<int> MarkPaymentSuccessAsync(long orderId, string provider, decimal amount, string transactionRef = null)
+        public async Task<int> MarkPaymentSuccessAsync(long orderId, string provider, decimal amount, string? transactionRef = null)
         {
             var parameters = new[]
             {
-                new SqlParameter("@OrderId", orderId),
-                new SqlParameter("@Provider", provider),
-                new SqlParameter("@Amount", amount),
-                new SqlParameter("@TransactionRef", (object)transactionRef ?? DBNull.Value)
+                P("@OrderId", orderId),
+                P("@Provider", provider),
+                P("@Amount", amount),
+                P("@TransactionRef", transactionRef)
             };
 
             return await ExecuteStoredProcedureAsync("sales.sp_MarkPaymentSuccess", parameters);
@@ -189,8 +194,8 @@ namespace IScream.Data
         {
             var parameters = new[]
             {
-                new SqlParameter("@OrderId", orderId),
-                new SqlParameter("@DeliveredAt", (object)deliveredAt ?? DBNull.Value)
+                P("@OrderId", orderId),
+                P("@DeliveredAt", deliveredAt)
             };
 
             return await ExecuteStoredProcedureAsync("sales.sp_MarkOrderDelivered", parameters);
@@ -201,17 +206,17 @@ namespace IScream.Data
         #region Shipments
 
         public async Task<long> CreateShipmentAsync(long orderId, string receiverName, string phone, string addressLine,
-            string ward = null, string district = null, string city = null)
+            string? ward = null, string? district = null, string? city = null)
         {
             var parameters = new[]
             {
-                new SqlParameter("@OrderId", orderId),
-                new SqlParameter("@ReceiverName", receiverName),
-                new SqlParameter("@Phone", phone),
-                new SqlParameter("@AddressLine", addressLine),
-                new SqlParameter("@Ward", (object)ward ?? DBNull.Value),
-                new SqlParameter("@District", (object)district ?? DBNull.Value),
-                new SqlParameter("@City", (object)city ?? DBNull.Value)
+                P("@OrderId", orderId),
+                P("@ReceiverName", receiverName),
+                P("@Phone", phone),
+                P("@AddressLine", addressLine),
+                P("@Ward", ward),
+                P("@District", district),
+                P("@City", city)
             };
 
             return await ExecuteScalarInternalAsync<long>("sales.sp_CreateShipment", parameters);
@@ -222,16 +227,16 @@ namespace IScream.Data
         #region Reviews
 
         public async Task<long> CreateReviewAsync(long userId, string targetType, long targetId, int rating,
-            string content = null, string channel = "IN_APP")
+            string? content = null, string channel = "IN_APP")
         {
             var parameters = new[]
             {
-                new SqlParameter("@UserId", userId),
-                new SqlParameter("@TargetType", targetType),
-                new SqlParameter("@TargetId", targetId),
-                new SqlParameter("@Rating", rating),
-                new SqlParameter("@Content", (object)content ?? DBNull.Value),
-                new SqlParameter("@Channel", channel)
+                P("@UserId", userId),
+                P("@TargetType", targetType),
+                P("@TargetId", targetId),
+                P("@Rating", rating),
+                P("@Content", content),
+                P("@Channel", channel)
             };
 
             return await ExecuteScalarInternalAsync<long>("content.sp_CreateReview", parameters);
@@ -245,21 +250,21 @@ namespace IScream.Data
         {
             var parameters = new[]
             {
-                new SqlParameter("@SubmissionId", submissionId),
-                new SqlParameter("@RecipeProductId", recipeProductId),
-                new SqlParameter("@PrizeMoney", prizeMoney),
-                new SqlParameter("@CertificateUrl", certificateUrl)
+                P("@SubmissionId", submissionId),
+                P("@RecipeProductId", recipeProductId),
+                P("@PrizeMoney", prizeMoney),
+                P("@CertificateUrl", certificateUrl)
             };
 
             return await ExecuteStoredProcedureAsync("ugc.sp_ApproveSubmission", parameters);
         }
 
-        public async Task<int> RejectSubmissionAsync(long submissionId, string adminNote = null)
+        public async Task<int> RejectSubmissionAsync(long submissionId, string? adminNote = null)
         {
             var parameters = new[]
             {
-                new SqlParameter("@SubmissionId", submissionId),
-                new SqlParameter("@AdminNote", (object)adminNote ?? DBNull.Value)
+                P("@SubmissionId", submissionId),
+                P("@AdminNote", adminNote)
             };
 
             return await ExecuteStoredProcedureAsync("ugc.sp_RejectSubmission", parameters);
@@ -269,17 +274,17 @@ namespace IScream.Data
 
         #region Products & Recipes
 
-        public async Task<T> ExecuteScalarAsync<T>(string query, SqlParameter[] parameters = null)
+        public async Task<T> ExecuteScalarAsync<T>(string query, SqlParameter[]? parameters = null)
         {
             return await ExecuteScalarInternalAsync<T>(query, parameters);
         }
 
-        public async Task<DataTable> ExecuteQueryAsync(string query, SqlParameter[] parameters = null)
+        public async Task<DataTable> ExecuteQueryAsync(string query, SqlParameter[]? parameters = null)
         {
             return await ExecuteDataTableInternalAsync(query, parameters);
         }
 
-        public async Task<int> ExecuteCommandAsync(string storedProcName, SqlParameter[] parameters = null)
+        public async Task<int> ExecuteCommandAsync(string storedProcName, SqlParameter[]? parameters = null)
         {
             return await ExecuteStoredProcedureAsync(storedProcName, parameters);
         }
@@ -292,8 +297,8 @@ namespace IScream.Data
         {
             var parameters = new[]
             {
-                new SqlParameter("@UserId", userId),
-                new SqlParameter("@OrderItemId", orderItemId)
+                P("@UserId", userId),
+                P("@OrderItemId", orderItemId)
             };
 
             return await ExecuteStoredProcedureAsync("sales.sp_MarkUsed", parameters);
