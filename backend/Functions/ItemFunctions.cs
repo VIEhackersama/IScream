@@ -59,7 +59,7 @@ namespace IScream.Functions
 
         [Function("Admin_Items_Create")]
         public async Task<HttpResponseData> Create(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "admin/items")] HttpRequestData req)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "admin-api/items")] HttpRequestData req)
         {
             try
             {
@@ -80,7 +80,7 @@ namespace IScream.Functions
 
         [Function("Admin_Items_Update")]
         public async Task<HttpResponseData> Update(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "admin/items/{id:guid}")] HttpRequestData req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "admin-api/items/{id:guid}")] HttpRequestData req,
             Guid id)
         {
             try

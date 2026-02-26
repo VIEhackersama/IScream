@@ -47,7 +47,7 @@ namespace IScream.Functions
 
         [Function("Admin_Feedbacks_List")]
         public async Task<HttpResponseData> AdminList(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "admin/feedbacks")] HttpRequestData req)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "admin-api/feedbacks")] HttpRequestData req)
         {
             try
             {

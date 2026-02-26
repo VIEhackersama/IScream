@@ -60,7 +60,7 @@ namespace IScream.Functions
 
         [Function("Admin_Recipes_Create")]
         public async Task<HttpResponseData> Create(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "admin/recipes")] HttpRequestData req)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "admin-api/recipes")] HttpRequestData req)
         {
             try
             {
@@ -81,7 +81,7 @@ namespace IScream.Functions
 
         [Function("Admin_Recipes_Update")]
         public async Task<HttpResponseData> Update(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "admin/recipes/{id:guid}")] HttpRequestData req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "admin-api/recipes/{id:guid}")] HttpRequestData req,
             Guid id)
         {
             try
@@ -103,7 +103,7 @@ namespace IScream.Functions
 
         [Function("Admin_Recipes_Delete")]
         public async Task<HttpResponseData> Delete(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "admin/recipes/{id:guid}")] HttpRequestData req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "admin-api/recipes/{id:guid}")] HttpRequestData req,
             Guid id)
         {
             try
