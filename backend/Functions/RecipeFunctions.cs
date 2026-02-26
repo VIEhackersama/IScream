@@ -12,7 +12,10 @@ using IScream.Models;
 using IScream.Services;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
+using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.Logging;
+using System.Net;
 
 namespace IScream.Functions
 {
@@ -28,6 +31,11 @@ namespace IScream.Functions
         }
 
         [Function("Recipes_List")]
+        [OpenApiOperation(operationId: "Recipes_List", tags: new[] { "Recipes" }, Summary = "List recipes", Description = "Returns a paginated list of recipes with optional isActive filter.")]
+        [OpenApiParameter(name: "isActive", In = ParameterLocation.Query, Required = false, Type = typeof(bool), Description = "Filter by active status (default: true)")]
+        [OpenApiParameter(name: "page", In = ParameterLocation.Query, Required = false, Type = typeof(int), Description = "Page number (default: 1)")]
+        [OpenApiParameter(name: "pageSize", In = ParameterLocation.Query, Required = false, Type = typeof(int), Description = "Page size (default: 12)")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(ApiResponse<PagedResult<Recipe>>), Description = "Paginated recipe list")]
         public async Task<HttpResponseData> List(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "recipes")] HttpRequestData req)
         {
@@ -45,6 +53,10 @@ namespace IScream.Functions
         }
 
         [Function("Recipes_GetById")]
+        [OpenApiOperation(operationId: "Recipes_GetById", tags: new[] { "Recipes" }, Summary = "Get recipe by ID", Description = "Returns a single recipe by its GUID.")]
+        [OpenApiParameter(name: "id", In = ParameterLocation.Path, Required = true, Type = typeof(Guid), Description = "Recipe ID")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(ApiResponse<Recipe>), Description = "Recipe detail")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Recipe not found")]
         public async Task<HttpResponseData> GetById(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "recipes/{id:guid}")] HttpRequestData req,
             Guid id)
@@ -59,6 +71,12 @@ namespace IScream.Functions
         }
 
         [Function("Admin_Recipes_Create")]
+        [OpenApiOperation(operationId: "Admin_Recipes_Create", tags: new[] { "Admin — Recipes" }, Summary = "Create recipe (Admin)", Description = "Creates a new recipe. Requires ADMIN role.")]
+        [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(CreateRecipeRequest), Required = true, Description = "Recipe payload")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Created, contentType: "application/json", bodyType: typeof(ApiResponse<object>), Description = "Recipe created")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.BadRequest, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Validation error")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Missing or invalid token")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Not an admin")]
         public async Task<HttpResponseData> Create(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "admin-api/recipes")] HttpRequestData req)
         {
@@ -80,6 +98,13 @@ namespace IScream.Functions
         }
 
         [Function("Admin_Recipes_Update")]
+        [OpenApiOperation(operationId: "Admin_Recipes_Update", tags: new[] { "Admin — Recipes" }, Summary = "Update recipe (Admin)", Description = "Updates an existing recipe. Requires ADMIN role.")]
+        [OpenApiParameter(name: "id", In = ParameterLocation.Path, Required = true, Type = typeof(Guid), Description = "Recipe ID")]
+        [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(UpdateRecipeRequest), Required = true, Description = "Fields to update")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Recipe updated")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.BadRequest, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Validation error")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Missing or invalid token")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Not an admin")]
         public async Task<HttpResponseData> Update(
             [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "admin-api/recipes/{id:guid}")] HttpRequestData req,
             Guid id)
@@ -102,6 +127,12 @@ namespace IScream.Functions
         }
 
         [Function("Admin_Recipes_Delete")]
+        [OpenApiOperation(operationId: "Admin_Recipes_Delete", tags: new[] { "Admin — Recipes" }, Summary = "Delete recipe (Admin)", Description = "Soft-deletes a recipe. Requires ADMIN role.")]
+        [OpenApiParameter(name: "id", In = ParameterLocation.Path, Required = true, Type = typeof(Guid), Description = "Recipe ID")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Recipe deleted")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Recipe not found")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Missing or invalid token")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Not an admin")]
         public async Task<HttpResponseData> Delete(
             [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "admin-api/recipes/{id:guid}")] HttpRequestData req,
             Guid id)

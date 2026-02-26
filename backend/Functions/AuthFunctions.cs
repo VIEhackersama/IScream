@@ -8,6 +8,8 @@ using IScream.Models;
 using IScream.Services;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
+using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.Logging;
 
 namespace IScream.Functions
@@ -25,6 +27,10 @@ namespace IScream.Functions
 
         // POST /api/auth/register
         [Function("Auth_Register")]
+        [OpenApiOperation(operationId: "Auth_Register", tags: new[] { "Auth" }, Summary = "Register a new user", Description = "Creates a new user account.")]
+        [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(RegisterRequest), Required = true, Description = "Registration payload")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Created, contentType: "application/json", bodyType: typeof(ApiResponse<object>), Description = "User registered successfully")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.BadRequest, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Validation error")]
         public async Task<HttpResponseData> Register(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "auth/register")] HttpRequestData req)
         {
@@ -44,6 +50,10 @@ namespace IScream.Functions
 
         // POST /api/auth/login
         [Function("Auth_Login")]
+        [OpenApiOperation(operationId: "Auth_Login", tags: new[] { "Auth" }, Summary = "Login", Description = "Authenticates a user and returns a JWT token.")]
+        [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(LoginRequest), Required = true, Description = "Login credentials")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(ApiResponse<LoginResponse>), Description = "Login successful")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.BadRequest, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Invalid credentials")]
         public async Task<HttpResponseData> Login(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "auth/login")] HttpRequestData req)
         {

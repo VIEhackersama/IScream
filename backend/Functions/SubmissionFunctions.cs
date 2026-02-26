@@ -11,7 +11,10 @@ using IScream.Models;
 using IScream.Services;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
+using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.Logging;
+using System.Net;
 
 namespace IScream.Functions
 {
@@ -27,6 +30,10 @@ namespace IScream.Functions
         }
 
         [Function("Submissions_Create")]
+        [OpenApiOperation(operationId: "Submissions_Create", tags: new[] { "Recipe Submissions" }, Summary = "Submit a recipe", Description = "Submits a new recipe for review. Works for both guests and authenticated users.")]
+        [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(CreateSubmissionRequest), Required = true, Description = "Submission payload")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Created, contentType: "application/json", bodyType: typeof(ApiResponse<object>), Description = "Submission created")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.BadRequest, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Validation error")]
         public async Task<HttpResponseData> Create(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "submissions")] HttpRequestData req)
         {
@@ -50,6 +57,10 @@ namespace IScream.Functions
         }
 
         [Function("Submissions_GetById")]
+        [OpenApiOperation(operationId: "Submissions_GetById", tags: new[] { "Recipe Submissions" }, Summary = "Get submission by ID", Description = "Returns a single recipe submission by its GUID.")]
+        [OpenApiParameter(name: "id", In = ParameterLocation.Path, Required = true, Type = typeof(Guid), Description = "Submission ID")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(ApiResponse<RecipeSubmission>), Description = "Submission detail")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Submission not found")]
         public async Task<HttpResponseData> GetById(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "submissions/{id:guid}")] HttpRequestData req,
             Guid id)
@@ -64,6 +75,13 @@ namespace IScream.Functions
         }
 
         [Function("Admin_Submissions_List")]
+        [OpenApiOperation(operationId: "Admin_Submissions_List", tags: new[] { "Admin — Submissions" }, Summary = "List submissions (Admin)", Description = "Returns a paginated list of recipe submissions with optional status filter. Requires ADMIN role.")]
+        [OpenApiParameter(name: "status", In = ParameterLocation.Query, Required = false, Type = typeof(string), Description = "Filter by status (PENDING, APPROVED, REJECTED)")]
+        [OpenApiParameter(name: "page", In = ParameterLocation.Query, Required = false, Type = typeof(int), Description = "Page number (default: 1)")]
+        [OpenApiParameter(name: "pageSize", In = ParameterLocation.Query, Required = false, Type = typeof(int), Description = "Page size (default: 20)")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(ApiResponse<PagedResult<RecipeSubmission>>), Description = "Paginated submission list")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Missing or invalid token")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Not an admin")]
         public async Task<HttpResponseData> AdminList(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "admin-api/submissions")] HttpRequestData req)
         {
@@ -85,6 +103,13 @@ namespace IScream.Functions
         }
 
         [Function("Admin_Submissions_Review")]
+        [OpenApiOperation(operationId: "Admin_Submissions_Review", tags: new[] { "Admin — Submissions" }, Summary = "Review submission (Admin)", Description = "Approves or rejects a recipe submission. Requires ADMIN role.")]
+        [OpenApiParameter(name: "id", In = ParameterLocation.Path, Required = true, Type = typeof(Guid), Description = "Submission ID")]
+        [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(ReviewSubmissionRequest), Required = true, Description = "Review decision")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Submission reviewed")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.BadRequest, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Validation error")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Missing or invalid token")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Not an admin")]
         public async Task<HttpResponseData> Review(
             [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "admin-api/submissions/{id:guid}/review")] HttpRequestData req,
             Guid id)
