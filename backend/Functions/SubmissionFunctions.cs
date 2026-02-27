@@ -83,7 +83,7 @@ namespace IScream.Functions
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Missing or invalid token")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Not an admin")]
         public async Task<HttpResponseData> AdminList(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "admin-api/submissions")] HttpRequestData req)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "management/submissions")] HttpRequestData req)
         {
             try
             {
@@ -111,7 +111,7 @@ namespace IScream.Functions
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Missing or invalid token")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Not an admin")]
         public async Task<HttpResponseData> Review(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "admin-api/submissions/{id:guid}/review")] HttpRequestData req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "management/submissions/{id:guid}/review")] HttpRequestData req,
             Guid id)
         {
             try
