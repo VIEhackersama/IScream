@@ -5,15 +5,19 @@
   /* Colors */
   --color-primary: #ee2b52;
   --color-primary-hover: #d41b40;
-  --color-background-light: #f8f6f6;
+  --color-accent: #ff8fa3;
+  --color-gold: #ffb347;
+  --color-cream: #fff8f0;
+  --color-background-light: #fdf8f8;
   --color-background-dark: #221014;
   --color-surface-light: #ffffff;
   --color-surface-dark: #2d161b;
-  --color-text-main: #221014;
+  --color-text-main: #1a0a10;
   --color-text-muted: #896169;
 
   /* Font family */
-  --font-display: "Plus Jakarta Sans", sans-serif;
+  --font-display: var(--font-display), "Nunito", sans-serif;
+  --font-serif: var(--font-serif), "Playfair Display", serif;
 
   /* Border radius */
   --radius-DEFAULT: 1rem;
@@ -28,12 +32,18 @@
 
 /* ===== Base Styles ===== */
 body {
-  @apply bg-background-light text-text-main font-display overflow-x-hidden antialiased;
+  @apply bg-background-light text-text-main overflow-x-hidden antialiased;
+  font-family: var(--font-display), "Nunito", sans-serif;
 }
 
 body.dark,
 html.dark body {
   @apply bg-background-dark text-background-light;
+}
+
+/* ===== Typography helpers ===== */
+.font-serif-display {
+  font-family: var(--font-serif), "Playfair Display", serif;
 }
 
 /* Selection highlight */
@@ -44,6 +54,24 @@ html.dark body {
 /* ===== Smooth Scrolling ===== */
 html {
   scroll-behavior: smooth;
+}
+
+/* ===== Floating animation ===== */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* ===== Gradient text helper ===== */
+.gradient-text {
+  background: linear-gradient(135deg, #ee2b52, #ff8fa3);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 /* ===== Material Symbols helper ===== */
