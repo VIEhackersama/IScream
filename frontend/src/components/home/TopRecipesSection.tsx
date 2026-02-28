@@ -43,7 +43,7 @@ const featuredRecipes: RecipeCardData[] = [
 
 function RecipeCard({ recipe }: { recipe: RecipeCardData }) {
   return (
-    <div className="group flex flex-col gap-4 rounded-2xl border border-transparent bg-white p-4 shadow-sm transition-all hover:border-primary/10 hover:shadow-xl hover:shadow-primary/10 dark:bg-surface-dark">
+    <div className="group flex flex-col gap-4 rounded-2xl border border-transparent bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:border-primary/10 hover:shadow-2xl hover:shadow-primary/10 dark:bg-surface-dark">
       {/* Image */}
       <div className="relative w-full overflow-hidden rounded-xl">
         <Image
@@ -51,15 +51,16 @@ function RecipeCard({ recipe }: { recipe: RecipeCardData }) {
           alt={recipe.title}
           width={400}
           height={300}
-          className="aspect-[4/3] w-full object-cover"
+          className="aspect-[4/3] w-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
-        <div className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-white/90 px-3 py-1 backdrop-blur-sm dark:bg-black/60">
+        {/* Like badge */}
+        <div className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-primary/15 px-3 py-1 backdrop-blur-sm">
           <MaterialIcon
             name="favorite"
             filled
-            className="text-[18px] text-primary"
+            className="text-[16px] text-primary"
           />
-          <span className="text-xs font-bold text-text-main dark:text-white">
+          <span className="text-xs font-bold text-primary">
             {recipe.likes}
           </span>
         </div>
@@ -67,7 +68,7 @@ function RecipeCard({ recipe }: { recipe: RecipeCardData }) {
 
       {/* Info */}
       <div className="px-2 pb-2">
-        <h3 className="text-xl font-bold leading-tight text-text-main transition-colors group-hover:text-primary dark:text-white">
+        <h3 className="font-serif-display text-xl font-bold leading-tight text-text-main transition-colors group-hover:text-primary dark:text-white">
           {recipe.title}
         </h3>
         <div className="mt-3 flex items-center gap-2">
@@ -80,7 +81,7 @@ function RecipeCard({ recipe }: { recipe: RecipeCardData }) {
           />
           <p className="text-sm font-medium text-text-muted dark:text-gray-400">
             by{" "}
-            <span className="text-text-main dark:text-gray-200">
+            <span className="font-semibold text-text-main dark:text-gray-200">
               {recipe.authorName}
             </span>
           </p>
@@ -92,30 +93,37 @@ function RecipeCard({ recipe }: { recipe: RecipeCardData }) {
 
 export function TopRecipesSection() {
   return (
-    <section>
-      {/* Header */}
-      <div className="flex flex-col gap-4 px-2 pb-8 md:flex-row md:items-end md:justify-between">
-        <div>
-          <span className="text-sm font-bold uppercase tracking-wider text-primary">
-            Community Choice
-          </span>
-          <h2 className="mt-1 text-3xl font-black tracking-tight text-text-main dark:text-white md:text-4xl">
-            Fan Favorites of the Month
-          </h2>
+    <section className="mt-10">
+      {/* Section wrapper with tinted background */}
+      <div
+        className="rounded-[2rem] px-8 py-10 md:px-12 md:py-12"
+        style={{ background: "linear-gradient(160deg, #fff5f7 0%, #fff9f5 100%)" }}
+      >
+        {/* Header */}
+        <div className="flex flex-col gap-4 pb-8 md:flex-row md:items-end md:justify-between">
+          <div>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-primary">
+              <span>✦</span> Community Choice
+            </span>
+            <h2 className="font-serif-display mt-3 text-3xl font-black tracking-tight text-text-main dark:text-white md:text-4xl">
+              Fan Favorites of the Month
+            </h2>
+          </div>
+          <Link
+            href={routes.recipes}
+            className="group flex items-center gap-1 text-sm font-bold text-primary transition-all hover:gap-2"
+          >
+            View All Recipes
+            <span className="transition-transform group-hover:translate-x-1">→</span>
+          </Link>
         </div>
-        <Link
-          href={routes.recipes}
-          className="border-b-2 border-primary/30 pb-0.5 text-sm font-bold text-text-main transition-colors hover:border-primary dark:text-white"
-        >
-          View All Recipes
-        </Link>
-      </div>
 
-      {/* Cards grid */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {featuredRecipes.map((recipe) => (
-          <RecipeCard key={recipe.title} recipe={recipe} />
-        ))}
+        {/* Cards grid */}
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {featuredRecipes.map((recipe) => (
+            <RecipeCard key={recipe.title} recipe={recipe} />
+          ))}
+        </div>
       </div>
     </section>
   );

@@ -9,19 +9,32 @@ const socialProofAvatars = [
 
 export function HeroSection() {
   return (
-    <section className="mt-8 md:mt-12">
-      <div className="flex flex-col-reverse gap-8 md:flex-row md:items-center">
+    <section className="relative mt-6 md:mt-10 overflow-hidden rounded-[2.5rem] px-8 py-12 md:py-16 md:px-14"
+      style={{
+        background: "linear-gradient(135deg, #fff9f5 0%, #fff4f0 40%, #fef2f6 100%)",
+      }}
+    >
+      {/* Decorative background circles */}
+      <div className="pointer-events-none absolute -top-20 -right-20 h-72 w-72 rounded-full bg-[#FFB347]/20 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-16 -left-16 h-56 w-56 rounded-full bg-[#ff8fa3]/20 blur-3xl" />
+
+      <div className="relative flex flex-col-reverse gap-10 md:flex-row md:items-center">
         {/* ---- Text ---- */}
         <div className="flex flex-1 flex-col items-start gap-6 md:pr-8">
           <div className="flex flex-col gap-4 text-left">
-            <Badge className="bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-300 w-fit">
-              <MaterialIcon name="local_fire_department" className="text-sm" />
+            {/* Warm amber badge */}
+            <Badge className="w-fit border border-amber-200 bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-300">
+              <MaterialIcon name="wb_sunny" className="text-sm" />
               New Summer Flavors
             </Badge>
 
-            <h1 className="text-5xl md:text-6xl font-black leading-[1.1] tracking-tight text-text-main dark:text-white">
-              Scoops of <span className="text-primary">Happiness</span> in Every
-              Bowl!
+            {/* Heading with Playfair Display */}
+            <h1
+              className="font-serif-display text-5xl font-black leading-[1.1] tracking-tight text-text-main dark:text-white md:text-6xl"
+            >
+              Scoops of{" "}
+              <span className="gradient-text">Happiness</span>
+              {" "}in Every Bowl!
             </h1>
 
             <p className="max-w-[480px] text-lg font-medium leading-relaxed text-text-muted dark:text-gray-300">
@@ -32,12 +45,12 @@ export function HeroSection() {
 
           {/* CTA buttons */}
           <div className="flex w-full flex-wrap gap-4">
-            <Button className="h-12 flex-1 px-8 text-base transition-transform hover:scale-105 sm:flex-none">
+            <Button className="h-12 flex-1 px-8 text-base shadow-lg shadow-primary/25 transition-all hover:scale-105 hover:shadow-primary/40 sm:flex-none">
               Browse Recipes
             </Button>
             <Button
               variant="outline"
-              className="h-12 flex-1 px-8 text-base sm:flex-none"
+              className="h-12 flex-1 border-primary/30 px-8 text-base hover:border-primary hover:bg-primary/5 sm:flex-none"
             >
               Join the Club
             </Button>
@@ -53,21 +66,22 @@ export function HeroSection() {
                   alt={`Community member ${i + 1}`}
                   width={40}
                   height={40}
-                  className="size-10 rounded-full border-2 border-white dark:border-background-dark object-cover"
+                  className="size-10 rounded-full border-2 border-white object-cover shadow-sm dark:border-background-dark"
                 />
               ))}
             </div>
             <p className="text-sm font-semibold text-text-muted dark:text-gray-400">
-              Join 10k+ ice cream lovers
+              Join <span className="text-primary font-bold">10k+</span> ice cream lovers
             </p>
           </div>
         </div>
 
         {/* ---- Hero image ---- */}
         <div className="group relative w-full flex-1">
-          <div className="absolute -inset-4 rounded-[2.5rem] bg-gradient-to-tr from-yellow-200 via-primary/20 to-blue-200 opacity-70 blur-xl transition-opacity duration-700 group-hover:opacity-100 dark:from-yellow-900/40 dark:via-primary/20 dark:to-blue-900/40" />
+          {/* Glow aura */}
+          <div className="absolute -inset-4 rounded-[2.5rem] bg-gradient-to-tr from-[#FFB347]/30 via-primary/15 to-[#ff8fa3]/30 opacity-70 blur-2xl transition-opacity duration-700 group-hover:opacity-100" />
 
-          <div className="relative w-full overflow-hidden rounded-[2rem] shadow-2xl transition-transform duration-500 hover:-translate-y-2">
+          <div className="relative w-full overflow-hidden rounded-[2rem] shadow-2xl shadow-primary/15 transition-transform duration-500 hover:-translate-y-2">
             <Image
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQEJSuiJRer8s1wL3Lvy4IMobHDHBW6_uXLcO8ea24q0HDFByir7vfeLTGAEVmvTlPem_--3SVhWiKHihIWKX-hYYXBUilYqT1LzaPFyeGWlliysxTbvGnj7IDZc3JcLjRIrG5IO3Gnp1xO7UCuda0kCfzJwmxw6XRb6qsn2TO55hz-UxWQQ6ok1LwavL_VxW1nNDIuW0NoFS0xqI_CNB44O-AuGFdUchxE_0328gZjc537lCMpa8opRwxJ5sKFSZKxlwH-UtnRTw"
               alt="Delicious colorful ice cream sundae with sprinkles"
@@ -76,16 +90,16 @@ export function HeroSection() {
               className="aspect-square w-full object-cover md:aspect-[4/3]"
               priority
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
           </div>
 
-          {/* Floating badge */}
-          <div className="absolute -bottom-6 -right-6 flex animate-bounce items-center gap-3 rounded-2xl bg-white p-4 shadow-xl dark:bg-surface-dark md:-left-10 md:bottom-10 md:right-auto">
-            <div className="rounded-full bg-green-100 p-2 text-green-600 dark:bg-green-900/30 dark:text-green-400">
+          {/* Floating badge — float animation */}
+          <div className="animate-float absolute -bottom-6 -right-6 flex items-center gap-3 rounded-2xl bg-white/95 p-4 shadow-xl shadow-primary/10 backdrop-blur-sm dark:bg-surface-dark md:-left-10 md:bottom-10 md:right-auto">
+            <div className="rounded-full bg-gradient-to-br from-green-100 to-emerald-100 p-2 text-green-600 dark:bg-green-900/30 dark:text-green-400">
               <MaterialIcon name="eco" />
             </div>
             <div>
-              <p className="text-xs font-bold uppercase text-text-muted dark:text-gray-400">
+              <p className="text-xs font-bold uppercase tracking-wide text-text-muted dark:text-gray-400">
                 Recipe of the Day
               </p>
               <p className="text-sm font-bold text-text-main dark:text-white">
