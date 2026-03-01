@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { MaterialIcon } from "@/components/ui";
-import { authService } from "@/services";
+import { authService, extractApiError } from "@/services";
 import { routes } from "@/config";
 
 interface FormData {
@@ -27,24 +27,25 @@ interface FormErrors {
 function validate(data: FormData): FormErrors {
     const errors: FormErrors = {};
 
-    if (!data.fullName.trim()) errors.fullName = "Please enter your full name.";
-
+    // Username: bắt buộc, ≥3 ký tự, chỉ chữ/số/gạch dưới — khớp với backend
     if (!data.username.trim()) {
-        errors.username = "Please enter a username.";
+        errors.username = "Vui lòng nhập tên đăng nhập.";
     } else if (data.username.trim().length < 3) {
-        errors.username = "Username must be at least 3 characters.";
+        errors.username = "Username phải có ít nhất 3 ký tự.";
     } else if (!/^[a-zA-Z0-9_]+$/.test(data.username.trim())) {
-        errors.username = "Only letters, numbers and underscores allowed.";
+        errors.username = "Chỉ được dùng chữ cái, số và dấu gạch dưới.";
     }
 
+    // Email: tuỳ chọn, nhưng phải hợp lệ nếu nhập
     if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
-        errors.email = "Please enter a valid email address.";
+        errors.email = "Email không hợp lệ.";
     }
 
+    // Password: bắt buộc, ≥6 ký tự — khớp với backend
     if (!data.password) {
-        errors.password = "Please create a password.";
+        errors.password = "Vui lòng tạo mật khẩu.";
     } else if (data.password.length < 6) {
-        errors.password = "Password must be at least 6 characters.";
+        errors.password = "Password phải có ít nhất 6 ký tự.";
     }
 
     return errors;
@@ -91,10 +92,10 @@ export default function RegisterPage() {
             setSuccess(true);
             setTimeout(() => router.push(routes.login), 2000);
         } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : "Something went wrong.";
-            const match = msg.match(/\d{3}\): (.+)$/);
+            // extractApiError phân tích JSON body backend trả về
+            // Backend errors: "Username đã tồn tại.", "Email đã được sử dụng.", ...
             setErrors({
-                general: match ? match[1] : "Registration failed. Please try again.",
+                general: extractApiError(err, "Đăng ký thất bại. Vui lòng thử lại."),
             });
         } finally {
             setLoading(false);
@@ -102,15 +103,15 @@ export default function RegisterPage() {
     }
 
     return (
-        // Outer: center the card on the page
-        <div className="flex w-full max-w-[860px] items-center justify-center py-8">
-            {/* Card container */}
-            <div className="flex w-full overflow-hidden rounded-[2rem] border border-gray-100 shadow-2xl shadow-primary/10">
+        // Outer: center the wide split on the page
+        <div className="flex w-full max-w-[1100px] items-center justify-center py-8">
+            {/* Card container — no border/shadow, just rounded clip for the photo */}
+            <div className="flex w-full overflow-hidden rounded-[2rem] shadow-xl shadow-black/5">
                 {/* Inner: split left/right */}
-                <div className="relative flex min-h-[560px] w-full flex-col lg:flex-row">
+                <div className="relative flex min-h-[620px] w-full flex-col lg:flex-row">
 
                     {/* ---- Left: Form ---- */}
-                    <div className="flex flex-1 flex-col items-center justify-center overflow-y-auto bg-white px-4 py-8 lg:p-10">
+                    <div className="flex flex-1 flex-col items-center justify-center overflow-y-auto bg-primary/5 px-4 py-8 lg:p-10">
                         <div className="flex w-full max-w-[520px] flex-col gap-6">
 
                             {/* Heading */}
@@ -164,13 +165,13 @@ export default function RegisterPage() {
 
                                     {/* Full Name */}
                                     <div className="flex flex-col gap-2">
-                                        <label className="pl-1 text-sm font-bold text-text-main dark:text-gray-200">Full Name</label>
+                                        <label className="pl-1 text-sm font-bold text-gray-900 dark:text-gray-200">Full Name</label>
                                         <div className="relative">
                                             <MaterialIcon name="person" className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted dark:text-gray-500" />
                                             <input
                                                 type="text" name="fullName" value={form.fullName} onChange={handleChange}
                                                 placeholder="e.g. Cherry Garcia" autoComplete="name"
-                                                className={`h-14 w-full rounded-full border bg-white pl-12 pr-4 text-base text-text-main outline-none transition-all placeholder:text-text-muted/60 focus:border-primary focus:ring-2 focus:ring-primary/20 dark:bg-white/5 dark:text-white dark:placeholder:text-gray-600 ${errors.fullName ? "border-red-400" : "border-gray-200 dark:border-white/10"}`}
+                                                className={`h-14 w-full rounded-full border bg-white pl-12 pr-4 text-base text-black outline-none transition-all placeholder:text-text-muted/60 focus:border-primary focus:ring-2 focus:ring-primary/20 dark:bg-white/5 dark:text-white dark:placeholder:text-gray-600 ${errors.fullName ? "border-red-400" : "border-gray-200 dark:border-white/10"}`}
                                             />
                                         </div>
                                         {errors.fullName && <p className="pl-2 text-xs text-red-500">{errors.fullName}</p>}
@@ -178,13 +179,13 @@ export default function RegisterPage() {
 
                                     {/* Username */}
                                     <div className="flex flex-col gap-2">
-                                        <label className="pl-1 text-sm font-bold text-text-main dark:text-gray-200">Username</label>
+                                        <label className="pl-1 text-sm font-bold text-gray-900 dark:text-gray-200">Username</label>
                                         <div className="relative">
                                             <MaterialIcon name="alternate_email" className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted dark:text-gray-500" />
                                             <input
                                                 type="text" name="username" value={form.username} onChange={handleChange}
                                                 placeholder="icecream_fan" autoComplete="username"
-                                                className={`h-14 w-full rounded-full border bg-white pl-12 pr-4 text-base text-text-main outline-none transition-all placeholder:text-text-muted/60 focus:border-primary focus:ring-2 focus:ring-primary/20 dark:bg-white/5 dark:text-white dark:placeholder:text-gray-600 ${errors.username ? "border-red-400" : "border-gray-200 dark:border-white/10"}`}
+                                                className={`h-14 w-full rounded-full border bg-white pl-12 pr-4 text-base text-black outline-none transition-all placeholder:text-text-muted/60 focus:border-primary focus:ring-2 focus:ring-primary/20 dark:bg-white/5 dark:text-white dark:placeholder:text-gray-600 ${errors.username ? "border-red-400" : "border-gray-200 dark:border-white/10"}`}
                                             />
                                         </div>
                                         {errors.username && <p className="pl-2 text-xs text-red-500">{errors.username}</p>}
@@ -192,13 +193,13 @@ export default function RegisterPage() {
 
                                     {/* Email */}
                                     <div className="flex flex-col gap-2">
-                                        <label className="pl-1 text-sm font-bold text-text-main dark:text-gray-200">Email Address</label>
+                                        <label className="pl-1 text-sm font-bold text-gray-900 dark:text-gray-200">Email Address</label>
                                         <div className="relative">
                                             <MaterialIcon name="mail" className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted dark:text-gray-500" />
                                             <input
                                                 type="email" name="email" value={form.email} onChange={handleChange}
                                                 placeholder="your_email@example.com" autoComplete="email"
-                                                className={`h-14 w-full rounded-full border bg-white pl-12 pr-4 text-base text-text-main outline-none transition-all placeholder:text-text-muted/60 focus:border-primary focus:ring-2 focus:ring-primary/20 dark:bg-white/5 dark:text-white dark:placeholder:text-gray-600 ${errors.email ? "border-red-400" : "border-gray-200 dark:border-white/10"}`}
+                                                className={`h-14 w-full rounded-full border bg-white pl-12 pr-4 text-base text-black outline-none transition-all placeholder:text-text-muted/60 focus:border-primary focus:ring-2 focus:ring-primary/20 dark:bg-white/5 dark:text-white dark:placeholder:text-gray-600 ${errors.email ? "border-red-400" : "border-gray-200 dark:border-white/10"}`}
                                             />
                                         </div>
                                         {errors.email && <p className="pl-2 text-xs text-red-500">{errors.email}</p>}
@@ -206,13 +207,13 @@ export default function RegisterPage() {
 
                                     {/* Password */}
                                     <div className="flex flex-col gap-2">
-                                        <label className="pl-1 text-sm font-bold text-text-main dark:text-gray-200">Password</label>
+                                        <label className="pl-1 text-sm font-bold text-gray-900 dark:text-gray-200">Password</label>
                                         <div className="relative">
                                             <MaterialIcon name="lock" className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted dark:text-gray-500" />
                                             <input
                                                 type="password" name="password" value={form.password} onChange={handleChange}
                                                 placeholder="Create a sweet password" autoComplete="new-password"
-                                                className={`h-14 w-full rounded-full border bg-white pl-12 pr-4 text-base text-text-main outline-none transition-all placeholder:text-text-muted/60 focus:border-primary focus:ring-2 focus:ring-primary/20 dark:bg-white/5 dark:text-white dark:placeholder:text-gray-600 ${errors.password ? "border-red-400" : "border-gray-200 dark:border-white/10"}`}
+                                                className={`h-14 w-full rounded-full border bg-white pl-12 pr-4 text-base text-black outline-none transition-all placeholder:text-text-muted/60 focus:border-primary focus:ring-2 focus:ring-primary/20 dark:bg-white/5 dark:text-white dark:placeholder:text-gray-600 ${errors.password ? "border-red-400" : "border-gray-200 dark:border-white/10"}`}
                                             />
                                         </div>
                                         {errors.password && <p className="pl-2 text-xs text-red-500">{errors.password}</p>}
@@ -220,7 +221,7 @@ export default function RegisterPage() {
 
                                     {/* Membership */}
                                     <div className="mt-2 flex flex-col gap-3">
-                                        <label className="pl-1 text-sm font-bold text-text-main dark:text-gray-200">Choose your flavor</label>
+                                        <label className="pl-1 text-sm font-bold text-gray-900 dark:text-gray-200">Choose your flavor</label>
                                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                             {/* Monthly */}
                                             <label className="group relative cursor-pointer">

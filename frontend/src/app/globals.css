@@ -58,8 +58,15 @@ html {
 
 /* ===== Floating animation ===== */
 @keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 .animate-float {
@@ -77,4 +84,21 @@ html {
 /* ===== Material Symbols helper ===== */
 .material-symbols-outlined.filled {
   font-variation-settings: "FILL" 1;
+}
+
+/* ===== Force input text color ===== */
+/* Chữ luôn đen khi gõ — không ép background để giữ tông màu của trang */
+input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]),
+textarea {
+  color: #111111 !important;
+  caret-color: #111111 !important;
+}
+
+/* Autofill override (Chrome/Safari) — dùng nền hồng nhạt thay trắng */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #111111 !important;
+  box-shadow: 0 0 0px 1000px #fff0f2 inset !important;
+  caret-color: #111111 !important;
 }
