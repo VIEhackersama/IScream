@@ -25,8 +25,7 @@ const footerSections: FooterSection[] = [
 export function Footer() {
   return (
     <footer
-      className="mt-10 w-full border-t border-primary/10 pt-12"
-      style={{ background: "linear-gradient(180deg, #fdf4f5 0%, #fdfaf9 100%)" }}
+      className="mt-10 w-full border-t border-gray-200 bg-white pt-12"
     >
       <div className="px-4 md:px-10">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4 mb-12">
@@ -39,11 +38,11 @@ export function Footer() {
               >
                 <MaterialIcon name="icecream" filled className="text-[18px]" />
               </div>
-              <h3 className="font-serif-display font-bold text-text-main dark:text-white">
+              <h3 className="font-serif-display font-bold text-text-main">
                 {siteConfig.shortName}
               </h3>
             </Link>
-            <p className="max-w-[200px] text-sm leading-relaxed text-text-muted dark:text-gray-400">
+            <p className="max-w-[200px] text-sm leading-relaxed text-text-muted">
               Spreading joy one scoop at a time since {siteConfig.foundedYear}.
             </p>
           </div>
@@ -51,14 +50,14 @@ export function Footer() {
           {/* Link columns */}
           {footerSections.map((section) => (
             <div key={section.title} className="flex flex-col gap-3">
-              <h4 className="mb-1 text-xs font-black uppercase tracking-widest text-text-main dark:text-white">
+              <h4 className="mb-1 text-xs font-black uppercase tracking-widest text-text-main">
                 {section.title}
               </h4>
               {section.links.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="text-sm text-text-muted transition-colors hover:text-primary dark:text-gray-400 dark:hover:text-primary"
+                  className="text-sm text-text-muted transition-colors hover:text-primary"
                 >
                   {link.label}
                 </Link>
@@ -68,7 +67,7 @@ export function Footer() {
 
           {/* Social column */}
           <div className="flex flex-col gap-3">
-            <h4 className="mb-1 text-xs font-black uppercase tracking-widest text-text-main dark:text-white">
+            <h4 className="mb-1 text-xs font-black uppercase tracking-widest text-text-main dark:text-dark">
               Social
             </h4>
             <div className="flex gap-3">
@@ -77,7 +76,7 @@ export function Footer() {
                 href={siteConfig.links.twitter}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex size-10 items-center justify-center rounded-full border border-gray-200 bg-white text-text-muted shadow-sm transition-all hover:border-[#1DA1F2] hover:text-[#1DA1F2] hover:shadow-md dark:border-white/10 dark:bg-white/5 dark:text-gray-400"
+                className="group flex size-10 items-center justify-center rounded-full border border-gray-200 bg-white text-text-muted shadow-sm transition-all hover:border-[#1DA1F2] hover:text-[#1DA1F2] hover:shadow-md"
                 aria-label="Twitter"
               >
                 <svg className="h-4 w-4 fill-current" viewBox="0 0 24 24">
@@ -89,7 +88,7 @@ export function Footer() {
                 href={siteConfig.links.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex size-10 items-center justify-center rounded-full border border-gray-200 bg-white text-text-muted shadow-sm transition-all hover:border-[#E1306C] hover:text-[#E1306C] hover:shadow-md dark:border-white/10 dark:bg-white/5 dark:text-gray-400"
+                className="group flex size-10 items-center justify-center rounded-full border border-gray-200 bg-white text-text-muted shadow-sm transition-all hover:border-[#E1306C] hover:text-[#E1306C] hover:shadow-md"
                 aria-label="Instagram"
               >
                 <svg className="h-4 w-4 fill-current" viewBox="0 0 24 24">
@@ -102,9 +101,9 @@ export function Footer() {
 
         {/* Bottom bar */}
         <div className="flex flex-col items-center justify-between border-t border-primary/10 pb-6 pt-6 md:flex-row">
-          <p className="text-sm text-text-muted dark:text-gray-500">
+          <p className="text-sm text-text-muted">
             © {new Date().getFullYear()}{" "}
-            <span className="font-semibold text-text-main dark:text-gray-300">
+            <span className="font-semibold text-text-main">
               {siteConfig.name}
             </span>
             . All rights reserved.

@@ -13,7 +13,7 @@
   --color-surface-light: #ffffff;
   --color-surface-dark: #2d161b;
   --color-text-main: #111118;
-  --color-text-muted: #64748b;
+  --color-text-muted: #374151;
 
   /* Font family */
   --font-display: var(--font-display), "Nunito", sans-serif;

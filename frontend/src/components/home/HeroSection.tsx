@@ -9,7 +9,7 @@ const socialProofAvatars = [
 
 export function HeroSection() {
   return (
-    <section className="relative mt-6 md:mt-10 overflow-hidden rounded-[2.5rem] bg-white border border-gray-100 shadow-sm px-8 py-12 md:py-16 md:px-14"
+    <section className="relative mt-6 md:mt-10 overflow-hidden rounded-[2.5rem] bg-white px-8 py-12 md:py-16 md:px-14"
     >
       {/* Subtle decorative circle — toned down */}
       <div className="pointer-events-none absolute -top-20 -right-20 h-72 w-72 rounded-full bg-gray-100/80 blur-3xl" />
@@ -27,14 +27,14 @@ export function HeroSection() {
 
             {/* Heading with Playfair Display */}
             <h1
-              className="font-serif-display text-5xl font-black leading-[1.1] tracking-tight text-text-main dark:text-white md:text-6xl"
+              className="font-serif-display text-5xl font-black leading-[1.1] tracking-tight text-text-main md:text-6xl"
             >
               Scoops of{" "}
               <span className="gradient-text">Happiness</span>
               {" "}in Every Bowl!
             </h1>
 
-            <p className="max-w-[480px] text-lg font-medium leading-relaxed text-text-muted dark:text-gray-300">
+            <p className="max-w-[480px] text-lg font-medium leading-relaxed text-text-muted">
               Discover secret recipes, order Mr. A&apos;s famous books, or share
               your own frozen creations with our sweet community.
             </p>
@@ -67,7 +67,7 @@ export function HeroSection() {
                 />
               ))}
             </div>
-            <p className="text-sm font-semibold text-text-muted dark:text-gray-400">
+            <p className="text-sm font-semibold text-text-muted">
               Join <span className="text-primary font-bold">10k+</span> ice cream lovers
             </p>
           </div>
@@ -96,7 +96,7 @@ export function HeroSection() {
               <MaterialIcon name="eco" />
             </div>
             <div>
-              <p className="text-xs font-bold uppercase tracking-wide text-text-muted dark:text-gray-400">
+              <p className="text-xs font-bold uppercase tracking-wide text-text-muted">
                 Recipe of the Day
               </p>
               <p className="text-sm font-bold text-text-main dark:text-white">
