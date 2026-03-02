@@ -14,6 +14,7 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using Microsoft.Data.SqlClient;
 
 var builder = FunctionsApplication.CreateBuilder(args);
 
@@ -47,6 +48,22 @@ builder.Services
 var connectionString = Environment.GetEnvironmentVariable("SqlConnectionString")
     ?? throw new InvalidOperationException("SqlConnectionString is required.");
 
+var raw = Environment.GetEnvironmentVariable("SqlConnectionString");
+
+if (string.IsNullOrWhiteSpace(raw))
+{
+    Console.WriteLine("❌ SqlConnectionString is NULL");
+}
+else
+{
+    var cs = new SqlConnectionStringBuilder(raw);
+
+    Console.WriteLine("=== CONNECTION DEBUG ===");
+    Console.WriteLine($"Server: {cs.DataSource}");
+    Console.WriteLine($"Database: {cs.InitialCatalog}");
+    Console.WriteLine($"User: {cs.UserID}");
+    Console.WriteLine("========================");
+}
 builder.Services.AddAppRepository(connectionString);
 
 // ── Services (Scoped — fresh instance per request) ────────────────────────────

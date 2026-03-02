@@ -1,0 +1,102 @@
+@import "tailwindcss";
+
+/* ===== Custom Theme (Tailwind v4) ===== */
+@theme inline {
+  /* Colors */
+  --color-primary: #ee2b52;
+  --color-primary-hover: #d41b40;
+  --color-accent: #ff8fa3;
+  --color-gold: #ffb347;
+  --color-cream: #fff8f0;
+  --color-background-light: #f5f5f7;
+  --color-background-dark: #221014;
+  --color-surface-light: #ffffff;
+  --color-surface-dark: #2d161b;
+  --color-text-main: #111118;
+  --color-text-muted: #374151;
+
+  /* Font family */
+  --font-display: var(--font-display), "Nunito", sans-serif;
+  --font-serif: var(--font-serif), "Playfair Display", serif;
+
+  /* Border radius */
+  --radius-DEFAULT: 1rem;
+  --radius-lg: 1.5rem;
+  --radius-xl: 2rem;
+  --radius-2xl: 3rem;
+  --radius-full: 9999px;
+}
+
+/* ===== Dark mode toggle via class ===== */
+/* (Tailwind v4 uses @variant or media by default; we use the "class" strategy via CSS) */
+
+/* ===== Base Styles ===== */
+body {
+  @apply bg-background-light text-text-main overflow-x-hidden antialiased;
+  font-family: var(--font-display), "Nunito", sans-serif;
+}
+
+body.dark,
+html.dark body {
+  @apply bg-background-dark text-background-light;
+}
+
+/* ===== Typography helpers ===== */
+.font-serif-display {
+  font-family: var(--font-serif), "Playfair Display", serif;
+}
+
+/* Selection highlight */
+::selection {
+  @apply bg-primary text-white;
+}
+
+/* ===== Smooth Scrolling ===== */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ===== Floating animation ===== */
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* ===== Gradient text helper ===== */
+.gradient-text {
+  background: linear-gradient(135deg, #ee2b52, #ff8fa3);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ===== Material Symbols helper ===== */
+.material-symbols-outlined.filled {
+  font-variation-settings: "FILL" 1;
+}
+
+/* ===== Force input text color ===== */
+/* Đảm bảo text khách hàng gõ vào luôn màu đen, không bị override bởi body color */
+input:not([type="checkbox"]):not([type="radio"]),
+textarea {
+  color: #1a0a10 !important;
+}
+
+/* Autofill override (Chrome/Safari) */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #1a0a10 !important;
+  box-shadow: 0 0 0px 1000px #ffffff inset !important;
+}

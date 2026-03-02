@@ -78,7 +78,7 @@ namespace IScream.Functions
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Missing or invalid token")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Not an admin")]
         public async Task<HttpResponseData> Create(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "admin-api/recipes")] HttpRequestData req)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "management/recipes")] HttpRequestData req)
         {
             try
             {
@@ -106,7 +106,7 @@ namespace IScream.Functions
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Missing or invalid token")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Not an admin")]
         public async Task<HttpResponseData> Update(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "admin-api/recipes/{id:guid}")] HttpRequestData req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "management/recipes/{id:guid}")] HttpRequestData req,
             Guid id)
         {
             try
@@ -134,7 +134,7 @@ namespace IScream.Functions
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Missing or invalid token")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Not an admin")]
         public async Task<HttpResponseData> Delete(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "admin-api/recipes/{id:guid}")] HttpRequestData req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "management/recipes/{id:guid}")] HttpRequestData req,
             Guid id)
         {
             try
