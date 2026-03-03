@@ -6,7 +6,8 @@ export function BookCtaSection() {
     <section
       className="relative mt-10 overflow-hidden rounded-[2.5rem] shadow-xl"
       style={{
-        background: "linear-gradient(135deg, #fffbe6 0%, #fff5d6 35%, #fff0f0 70%, #fff9f0 100%)",
+        background:
+          "linear-gradient(135deg, #fffbe6 0%, #fff5d6 35%, #fff0f0 70%, #fff9f0 100%)",
       }}
     >
       {/* Decorative blobs */}
@@ -24,8 +25,7 @@ export function BookCtaSection() {
           </Badge>
 
           <h2 className="font-serif-display mb-4 text-3xl font-black leading-[1.1] text-text-main md:text-5xl">
-            Mr. A&apos;s Secret{" "}
-            <br className="hidden md:block" />
+            Mr. A&apos;s Secret <br className="hidden md:block" />
             Recipes Book
           </h2>
 
@@ -48,8 +48,14 @@ export function BookCtaSection() {
               { icon: "verified", text: "Official Edition" },
               { icon: "local_shipping", text: "Free Shipping" },
             ].map((item) => (
-              <div key={item.text} className="flex items-center gap-1.5 text-sm font-semibold text-text-muted">
-                <MaterialIcon name={item.icon} className="text-[16px] text-gold" />
+              <div
+                key={item.text}
+                className="flex items-center gap-1.5 text-sm font-semibold text-text-muted"
+              >
+                <MaterialIcon
+                  name={item.icon}
+                  className="text-[16px] text-gold"
+                />
                 {item.text}
               </div>
             ))}
