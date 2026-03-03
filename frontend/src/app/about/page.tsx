@@ -137,7 +137,7 @@ export default function AboutPage() {
               Recipe Book Published
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mt-2">
-              "Scoops of Joy" hit the shelves, sharing Mr. A's secret techniques
+              "Scoops of Joy" hit the shelves, sharing IScream's secret techniques
               with home cooks around the world.
             </p>
           </div>
