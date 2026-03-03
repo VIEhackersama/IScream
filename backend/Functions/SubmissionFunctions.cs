@@ -41,7 +41,7 @@ namespace IScream.Functions
             try
             {
                 var body = await req.ReadFromJsonAsync<CreateSubmissionRequest>();
-                if (body == null) return await FunctionHelper.BadRequest(req, "Body không hợp lệ.");
+                if (body == null) return await FunctionHelper.BadRequest(req, "Invalid request body.");
 
                 // If authenticated, bind userId from JWT
                 var claims = FunctionHelper.ExtractAuthClaims(req);
@@ -52,7 +52,7 @@ namespace IScream.Functions
 
                 return await FunctionHelper.Created(req,
                     new { submissionId = id },
-                    "Gửi công thức thành công. Chúng tôi sẽ xem xét và phản hồi sớm nhất.");
+                    "Recipe submitted successfully. We will review and respond as soon as possible.");
             }
             catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(Create)); }
         }
@@ -124,7 +124,7 @@ namespace IScream.Functions
                 if (claims.Value.role != "ADMIN") return await FunctionHelper.Forbidden(req);
 
                 var body = await req.ReadFromJsonAsync<ReviewSubmissionRequest>();
-                if (body == null) return await FunctionHelper.BadRequest(req, "Body không hợp lệ.");
+                if (body == null) return await FunctionHelper.BadRequest(req, "Invalid request body.");
 
                 // Override AdminUserId from JWT claims
                 body.AdminUserId = claims.Value.userId;
@@ -132,8 +132,8 @@ namespace IScream.Functions
                 var (ok, error) = await _svc.ReviewAsync(id, body);
                 if (!ok) return await FunctionHelper.BadRequest(req, error);
 
-                var action = body.Approve ? "duyệt" : "từ chối";
-                return await FunctionHelper.OkMessage(req, $"Đã {action} submission thành công.");
+                var action = body.Approve ? "approved" : "rejected";
+                return await FunctionHelper.OkMessage(req, $"Submission {action} successfully.");
             }
             catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(Review)); }
         }

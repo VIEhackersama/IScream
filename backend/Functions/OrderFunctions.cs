@@ -41,12 +41,12 @@ namespace IScream.Functions
             try
             {
                 var body = await req.ReadFromJsonAsync<CreateOrderRequest>();
-                if (body == null) return await FunctionHelper.BadRequest(req, "Body không hợp lệ.");
+                if (body == null) return await FunctionHelper.BadRequest(req, "Invalid request body.");
 
                 var (orderId, error) = await _svc.PlaceOrderAsync(body);
                 if (orderId == Guid.Empty) return await FunctionHelper.BadRequest(req, error);
 
-                return await FunctionHelper.Created(req, new { orderId }, "Đặt hàng thành công.");
+                return await FunctionHelper.Created(req, new { orderId }, "Order placed successfully.");
             }
             catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(PlaceOrder)); }
         }
@@ -119,12 +119,12 @@ namespace IScream.Functions
 
                 var body = await req.ReadFromJsonAsync<UpdateOrderStatusRequest>();
                 if (body == null || string.IsNullOrWhiteSpace(body.Status))
-                    return await FunctionHelper.BadRequest(req, "Status không hợp lệ.");
+                    return await FunctionHelper.BadRequest(req, "Invalid status.");
 
                 var (ok, error) = await _svc.UpdateStatusAsync(id, body.Status);
                 if (!ok) return await FunctionHelper.BadRequest(req, error);
 
-                return await FunctionHelper.OkMessage(req, "Cập nhật trạng thái đơn hàng thành công.");
+                return await FunctionHelper.OkMessage(req, "Order status updated successfully.");
             }
             catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(UpdateStatus)); }
         }

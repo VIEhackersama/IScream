@@ -126,7 +126,7 @@ export default function FeedbackPage() {
         </section>
       </main>
 
-      {/* Mobile footer strip (giống HTML) */}
+      {/* Mobile footer strip */}
       <footer className="lg:hidden border-t border-[#f4f0f1] dark:border-[#3a1d23] py-6 px-4 text-center bg-surface-light dark:bg-surface-dark">
         <div className="flex justify-center gap-6 mb-4">
           <a className="text-text-main dark:text-gray-200 text-sm font-medium" href="#">

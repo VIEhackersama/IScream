@@ -39,7 +39,7 @@ namespace IScream.Functions
             try
             {
                 var body = await req.ReadFromJsonAsync<CreateFeedbackRequest>();
-                if (body == null) return await FunctionHelper.BadRequest(req, "Body không hợp lệ.");
+                if (body == null) return await FunctionHelper.BadRequest(req, "Invalid request body.");
 
                 // If the user is authenticated, override userId from JWT
                 var claims = FunctionHelper.ExtractAuthClaims(req);
@@ -48,7 +48,7 @@ namespace IScream.Functions
                 var (id, error) = await _svc.SubmitAsync(body);
                 if (id == Guid.Empty) return await FunctionHelper.BadRequest(req, error);
 
-                return await FunctionHelper.Created(req, new { feedbackId = id }, "Cảm ơn phản hồi của bạn!");
+                return await FunctionHelper.Created(req, new { feedbackId = id }, "Thank you for your feedback!");
             }
             catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(Submit)); }
         }

@@ -39,12 +39,12 @@ namespace IScream.Functions
             {
                 var body = await req.ReadFromJsonAsync<RegisterRequest>();
                 if (body == null)
-                    return await FunctionHelper.BadRequest(req, "Body không hợp lệ.");
+                    return await FunctionHelper.BadRequest(req, "Invalid request body.");
 
                 var (ok, error, userId) = await _auth.RegisterAsync(body);
                 if (!ok) return await FunctionHelper.BadRequest(req, error);
 
-                return await FunctionHelper.Created(req, new { userId }, "Đăng ký thành công.");
+                return await FunctionHelper.Created(req, new { userId }, "Registration successful.");
             }
             catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(Register)); }
         }
@@ -62,12 +62,12 @@ namespace IScream.Functions
             {
                 var body = await req.ReadFromJsonAsync<LoginRequest>();
                 if (body == null)
-                    return await FunctionHelper.BadRequest(req, "Body không hợp lệ.");
+                    return await FunctionHelper.BadRequest(req, "Invalid request body.");
 
                 var (ok, error, response) = await _auth.LoginAsync(body);
                 if (!ok) return await FunctionHelper.BadRequest(req, error);
 
-                return await FunctionHelper.Ok(req, response, "Đăng nhập thành công.");
+                return await FunctionHelper.Ok(req, response, "Login successful.");
             }
             catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(Login)); }
         }
@@ -111,12 +111,12 @@ namespace IScream.Functions
                 if (claims == null) return await FunctionHelper.Unauthorized(req);
 
                 var body = await req.ReadFromJsonAsync<UpdateProfileRequest>();
-                if (body == null) return await FunctionHelper.BadRequest(req, "Body không hợp lệ.");
+                if (body == null) return await FunctionHelper.BadRequest(req, "Invalid request body.");
 
                 var (ok, error) = await _auth.UpdateProfileAsync(claims.Value.userId, body);
                 if (!ok) return await FunctionHelper.BadRequest(req, error);
 
-                return await FunctionHelper.OkMessage(req, "Cập nhật hồ sơ thành công.");
+                return await FunctionHelper.OkMessage(req, "Profile updated successfully.");
             }
             catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(UpdateProfile)); }
         }
@@ -138,12 +138,12 @@ namespace IScream.Functions
                 if (claims == null) return await FunctionHelper.Unauthorized(req);
 
                 var body = await req.ReadFromJsonAsync<ChangePasswordRequest>();
-                if (body == null) return await FunctionHelper.BadRequest(req, "Body không hợp lệ.");
+                if (body == null) return await FunctionHelper.BadRequest(req, "Invalid request body.");
 
                 var (ok, error) = await _auth.ChangePasswordAsync(claims.Value.userId, body);
                 if (!ok) return await FunctionHelper.BadRequest(req, error);
 
-                return await FunctionHelper.OkMessage(req, "Đổi mật khẩu thành công.");
+                return await FunctionHelper.OkMessage(req, "Password changed successfully.");
             }
             catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(ChangePassword)); }
         }

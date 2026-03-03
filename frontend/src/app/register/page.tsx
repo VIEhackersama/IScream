@@ -28,21 +28,21 @@ function validate(data: FormData): FormErrors {
     const errors: FormErrors = {};
 
     if (!data.username.trim()) {
-        errors.username = "Vui lòng nhập tên đăng nhập.";
+        errors.username = "Please enter a username.";
     } else if (data.username.trim().length < 3) {
-        errors.username = "Username phải có ít nhất 3 ký tự.";
+        errors.username = "Username must be at least 3 characters.";
     } else if (!/^[a-zA-Z0-9_]+$/.test(data.username.trim())) {
-        errors.username = "Chỉ được dùng chữ cái, số và dấu gạch dưới.";
+        errors.username = "Only letters, numbers, and underscores are allowed.";
     }
 
     if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
-        errors.email = "Email không hợp lệ.";
+        errors.email = "Invalid email address.";
     }
 
     if (!data.password) {
-        errors.password = "Vui lòng tạo mật khẩu.";
+        errors.password = "Please create a password.";
     } else if (data.password.length < 6) {
-        errors.password = "Password phải có ít nhất 6 ký tự.";
+        errors.password = "Password must be at least 6 characters.";
     }
 
     return errors;
@@ -83,7 +83,7 @@ export default function RegisterPage() {
             setSuccess(true);
             setTimeout(() => router.push(routes.login), 2000);
         } catch (err: unknown) {
-            setErrors({ general: extractApiError(err, "Đăng ký thất bại. Vui lòng thử lại.") });
+            setErrors({ general: extractApiError(err, "Registration failed. Please try again.") });
         } finally {
             setLoading(false);
         }
@@ -135,7 +135,7 @@ export default function RegisterPage() {
                                         <MaterialIcon name="check_circle" filled className="text-[36px] text-green-600" />
                                     </div>
                                     <div>
-                                        <p className="text-base font-bold text-text-main">Account created! 🎉</p>
+                                        <p className="text-base font-bold text-text-main">Account created!</p>
                                         <p className="mt-1 text-sm text-text-muted">Redirecting you to login...</p>
                                     </div>
                                 </div>

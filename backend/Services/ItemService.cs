@@ -44,18 +44,18 @@ namespace IScream.Services
         {
             var item = await _repo.GetItemByIdAsync(id);
             return item == null
-                ? (null, "Item không tồn tại.")
+                ? (null, "Item not found.")
                 : (item, string.Empty);
         }
 
         public async Task<(Guid id, string error)> CreateAsync(CreateItemRequest req)
         {
             if (string.IsNullOrWhiteSpace(req.Title))
-                return (Guid.Empty, "Title không được để trống.");
+                return (Guid.Empty, "Title is required.");
             if (req.Price < 0)
-                return (Guid.Empty, "Price không hợp lệ.");
+                return (Guid.Empty, "Invalid price.");
             if (req.Stock < 0)
-                return (Guid.Empty, "Stock không hợp lệ.");
+                return (Guid.Empty, "Invalid stock.");
 
             var item = new Item
             {
@@ -75,7 +75,7 @@ namespace IScream.Services
         {
             var existing = await _repo.GetItemByIdAsync(id);
             if (existing == null)
-                return (false, "Item không tồn tại.");
+                return (false, "Item not found.");
 
             // Patch only provided fields
             existing.Title = req.Title?.Trim() ?? existing.Title;
@@ -85,7 +85,7 @@ namespace IScream.Services
             existing.Stock = req.Stock ?? existing.Stock;
 
             var ok = await _repo.UpdateItemAsync(existing);
-            return (ok, ok ? string.Empty : "Cập nhật thất bại.");
+            return (ok, ok ? string.Empty : "Update failed.");
         }
     }
 }
