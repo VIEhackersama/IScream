@@ -26,21 +26,21 @@ namespace IScream.Services
         public async Task<(Guid orderId, string error)> PlaceOrderAsync(CreateOrderRequest req)
         {
             if (string.IsNullOrWhiteSpace(req.CustomerName))
-                return (Guid.Empty, "CustomerName không được để trống.");
+                return (Guid.Empty, "CustomerName is required.");
             if (req.Quantity <= 0)
-                return (Guid.Empty, "Quantity phải lớn hơn 0.");
+                return (Guid.Empty, "Quantity must be greater than 0.");
 
             // Check item exists and has enough stock
             var item = await _repo.GetItemByIdAsync(req.ItemId);
             if (item == null)
-                return (Guid.Empty, "Item không tồn tại.");
+                return (Guid.Empty, "Item not found.");
             if (item.Stock < req.Quantity)
-                return (Guid.Empty, $"Không đủ hàng. Còn lại: {item.Stock}.");
+                return (Guid.Empty, $"Insufficient stock. Remaining: {item.Stock}.");
 
             // Deduct stock atomically (SQL WHERE Stock - delta >= 0)
             var stockOk = await _repo.AdjustStockAsync(req.ItemId, -req.Quantity);
             if (!stockOk)
-                return (Guid.Empty, "Lỗi trừ tồn kho. Vui lòng thử lại.");
+                return (Guid.Empty, "Stock deduction failed. Please try again.");
 
             // Generate unique OrderNo: ORD-YYYYMMDD-XXXXXX
             string orderNo;
@@ -50,7 +50,7 @@ namespace IScream.Services
                 var rand = new Random();
                 orderNo = $"ORD-{DateTime.UtcNow:yyyyMMdd}-{rand.Next(100000, 999999)}";
                 attempt++;
-                if (attempt > 10) return (Guid.Empty, "Không thể tạo OrderNo. Thử lại.");
+                if (attempt > 10) return (Guid.Empty, "Unable to generate OrderNo. Please try again.");
             } while (await _repo.OrderNoExistsAsync(orderNo));
 
             var order = new ItemOrder
@@ -73,7 +73,7 @@ namespace IScream.Services
         public async Task<(ItemOrder? order, string error)> GetByIdAsync(Guid id)
         {
             var order = await _repo.GetOrderByIdAsync(id);
-            return order == null ? (null, "Đơn hàng không tồn tại.") : (order, string.Empty);
+            return order == null ? (null, "Order not found.") : (order, string.Empty);
         }
 
         public async Task<PagedResult<ItemOrder>> ListAsync(string? status, int page, int pageSize)
@@ -88,17 +88,17 @@ namespace IScream.Services
         public async Task<(bool ok, string error)> UpdateStatusAsync(Guid id, string status, Guid? paymentId = null)
         {
             if (!AllowedStatuses.Contains(status.ToUpper()))
-                return (false, $"Status không hợp lệ. Cho phép: {string.Join(", ", AllowedStatuses)}");
+                return (false, $"Invalid status. Allowed: {string.Join(", ", AllowedStatuses)}");
 
             var order = await _repo.GetOrderByIdAsync(id);
-            if (order == null) return (false, "Đơn hàng không tồn tại.");
+            if (order == null) return (false, "Order not found.");
 
             // Restore stock if CANCELLED
             if (status.ToUpper() == "CANCELLED" && order.Status == "PENDING")
                 await _repo.AdjustStockAsync(order.ItemId, order.Quantity);
 
             var ok = await _repo.UpdateOrderStatusAsync(id, status.ToUpper(), paymentId);
-            return (ok, ok ? string.Empty : "Cập nhật trạng thái thất bại.");
+            return (ok, ok ? string.Empty : "Status update failed.");
         }
     }
 }

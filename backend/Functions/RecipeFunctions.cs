@@ -89,12 +89,12 @@ namespace IScream.Functions
                 if (claims.Value.role != "ADMIN") return await FunctionHelper.Forbidden(req);
 
                 var body = await req.ReadFromJsonAsync<CreateRecipeRequest>();
-                if (body == null) return await FunctionHelper.BadRequest(req, "Body không hợp lệ.");
+                if (body == null) return await FunctionHelper.BadRequest(req, "Invalid request body.");
 
                 var (id, error) = await _svc.CreateAsync(body);
                 if (id == Guid.Empty) return await FunctionHelper.BadRequest(req, error);
 
-                return await FunctionHelper.Created(req, new { id }, "Tạo công thức thành công.");
+                return await FunctionHelper.Created(req, new { id }, "Recipe created successfully.");
             }
             catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(Create)); }
         }
@@ -119,12 +119,12 @@ namespace IScream.Functions
                 if (claims.Value.role != "ADMIN") return await FunctionHelper.Forbidden(req);
 
                 var body = await req.ReadFromJsonAsync<UpdateRecipeRequest>();
-                if (body == null) return await FunctionHelper.BadRequest(req, "Body không hợp lệ.");
+                if (body == null) return await FunctionHelper.BadRequest(req, "Invalid request body.");
 
                 var (ok, error) = await _svc.UpdateAsync(id, body);
                 if (!ok) return await FunctionHelper.BadRequest(req, error);
 
-                return await FunctionHelper.OkMessage(req, "Cập nhật công thức thành công.");
+                return await FunctionHelper.OkMessage(req, "Recipe updated successfully.");
             }
             catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(Update)); }
         }
@@ -150,7 +150,7 @@ namespace IScream.Functions
                 var (ok, error) = await _svc.SoftDeleteAsync(id);
                 if (!ok) return await FunctionHelper.NotFound(req, error);
 
-                return await FunctionHelper.OkMessage(req, "Xoá công thức thành công.");
+                return await FunctionHelper.OkMessage(req, "Recipe deleted successfully.");
             }
             catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(Delete)); }
         }

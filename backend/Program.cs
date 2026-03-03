@@ -51,7 +51,7 @@ var connectionString = Environment.GetEnvironmentVariable("SqlConnectionString")
 var jwtSecret = Environment.GetEnvironmentVariable("JwtSecretKey");
 if (string.IsNullOrWhiteSpace(jwtSecret) || jwtSecret.StartsWith("CHANGE_ME"))
 {
-    Console.WriteLine("⚠️  WARNING: JwtSecretKey is not configured or using the default value. Set it in local.settings.json or App Settings.");
+    Console.WriteLine("WARNING: JwtSecretKey is not configured or using the default value. Set it in local.settings.json or App Settings.");
 }
 
 builder.Services.AddAppRepository(connectionString);

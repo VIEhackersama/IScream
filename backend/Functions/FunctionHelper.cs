@@ -73,7 +73,7 @@ namespace IScream.Functions
         internal static async Task<HttpResponseData> Forbidden(HttpRequestData req)
         {
             var r = req.CreateResponse(HttpStatusCode.Forbidden);
-            await r.WriteAsJsonAsync(ApiResponse.Fail("Bạn không có quyền truy cập."));
+            await r.WriteAsJsonAsync(ApiResponse.Fail("Access denied."));
             return r;
         }
 
@@ -117,7 +117,7 @@ namespace IScream.Functions
         {
             logger.LogError(ex, "[{Context}] Unhandled exception", context);
             var r = req.CreateResponse(HttpStatusCode.InternalServerError);
-            await r.WriteAsJsonAsync(ApiResponse.Fail("Lỗi hệ thống. Vui lòng thử lại."));
+            await r.WriteAsJsonAsync(ApiResponse.Fail("Internal server error. Please try again."));
             return r;
         }
     }

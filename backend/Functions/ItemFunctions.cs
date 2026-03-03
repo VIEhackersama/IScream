@@ -88,12 +88,12 @@ namespace IScream.Functions
                 if (claims.Value.role != "ADMIN") return await FunctionHelper.Forbidden(req);
 
                 var body = await req.ReadFromJsonAsync<CreateItemRequest>();
-                if (body == null) return await FunctionHelper.BadRequest(req, "Body không hợp lệ.");
+                if (body == null) return await FunctionHelper.BadRequest(req, "Invalid request body.");
 
                 var (id, error) = await _svc.CreateAsync(body);
                 if (id == Guid.Empty) return await FunctionHelper.BadRequest(req, error);
 
-                return await FunctionHelper.Created(req, new { id }, "Tạo item thành công.");
+                return await FunctionHelper.Created(req, new { id }, "Item created successfully.");
             }
             catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(Create)); }
         }
@@ -118,12 +118,12 @@ namespace IScream.Functions
                 if (claims.Value.role != "ADMIN") return await FunctionHelper.Forbidden(req);
 
                 var body = await req.ReadFromJsonAsync<UpdateItemRequest>();
-                if (body == null) return await FunctionHelper.BadRequest(req, "Body không hợp lệ.");
+                if (body == null) return await FunctionHelper.BadRequest(req, "Invalid request body.");
 
                 var (ok, error) = await _svc.UpdateAsync(id, body);
                 if (!ok) return await FunctionHelper.BadRequest(req, error);
 
-                return await FunctionHelper.OkMessage(req, "Cập nhật item thành công.");
+                return await FunctionHelper.OkMessage(req, "Item updated successfully.");
             }
             catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(Update)); }
         }

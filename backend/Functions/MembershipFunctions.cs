@@ -98,7 +98,7 @@ namespace IScream.Functions
                 if (claims == null) return await FunctionHelper.Unauthorized(req);
 
                 var body = await req.ReadFromJsonAsync<SubscribeRequest>();
-                if (body == null) return await FunctionHelper.BadRequest(req, "Body không hợp lệ.");
+                if (body == null) return await FunctionHelper.BadRequest(req, "Invalid request body.");
 
                 // Force userId from JWT to prevent spoofing
                 body.UserId = claims.Value.userId;
@@ -106,7 +106,7 @@ namespace IScream.Functions
                 var (subId, error) = await _svc.SubscribeAsync(body);
                 if (subId == Guid.Empty) return await FunctionHelper.BadRequest(req, error);
 
-                return await FunctionHelper.Created(req, new { subscriptionId = subId }, "Đăng ký membership thành công.");
+                return await FunctionHelper.Created(req, new { subscriptionId = subId }, "Membership subscription created successfully.");
             }
             catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(Subscribe)); }
         }

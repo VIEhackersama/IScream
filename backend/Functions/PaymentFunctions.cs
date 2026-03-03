@@ -45,7 +45,7 @@ namespace IScream.Functions
                 if (claims == null) return await FunctionHelper.Unauthorized(req);
 
                 var body = await req.ReadFromJsonAsync<CreatePaymentRequest>();
-                if (body == null) return await FunctionHelper.BadRequest(req, "Body không hợp lệ.");
+                if (body == null) return await FunctionHelper.BadRequest(req, "Invalid request body.");
 
                 // Force UserId from JWT to prevent spoofing
                 body.UserId = claims.Value.userId;
@@ -53,7 +53,7 @@ namespace IScream.Functions
                 var (id, error) = await _svc.CreatePaymentAsync(body);
                 if (id == Guid.Empty) return await FunctionHelper.BadRequest(req, error);
 
-                return await FunctionHelper.Created(req, new { paymentId = id }, "Tạo payment thành công.");
+                return await FunctionHelper.Created(req, new { paymentId = id }, "Payment created successfully.");
             }
             catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(Create)); }
         }
@@ -117,7 +117,7 @@ namespace IScream.Functions
                 var (ok, error) = await _svc.ConfirmPaymentAsync(id, linkedEntityId);
                 if (!ok) return await FunctionHelper.BadRequest(req, error);
 
-                return await FunctionHelper.OkMessage(req, "Xác nhận thanh toán thành công.");
+                return await FunctionHelper.OkMessage(req, "Payment confirmed successfully.");
             }
             catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(Confirm)); }
         }
