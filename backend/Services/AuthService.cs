@@ -17,6 +17,9 @@ namespace IScream.Services
     {
         Task<(bool ok, string error, Guid userId)> RegisterAsync(RegisterRequest req);
         Task<(bool ok, string error, LoginResponse? response)> LoginAsync(LoginRequest req);
+        Task<(UserInfo? user, string error)> GetMeAsync(Guid userId);
+        Task<(bool ok, string error)> UpdateProfileAsync(Guid userId, UpdateProfileRequest req);
+        Task<(bool ok, string error)> ChangePasswordAsync(Guid userId, ChangePasswordRequest req);
     }
 
     public class AuthService : IAuthService
@@ -99,6 +102,65 @@ namespace IScream.Services
                 }
             };
             return (true, string.Empty, response);
+        }
+
+        public async Task<(UserInfo? user, string error)> GetMeAsync(Guid userId)
+        {
+            var user = await _repo.GetUserByIdAsync(userId);
+            if (user == null)
+                return (null, "Người dùng không tồn tại.");
+
+            return (new UserInfo
+            {
+                Id = user.Id,
+                Username = user.Username,
+                FullName = user.FullName,
+                Email = user.Email,
+                Role = user.Role
+            }, string.Empty);
+        }
+
+        public async Task<(bool ok, string error)> UpdateProfileAsync(Guid userId, UpdateProfileRequest req)
+        {
+            var user = await _repo.GetUserByIdAsync(userId);
+            if (user == null)
+                return (false, "Người dùng không tồn tại.");
+
+            // If email is being changed, check uniqueness
+            if (!string.IsNullOrWhiteSpace(req.Email))
+            {
+                var normalizedEmail = req.Email.Trim().ToLower();
+                if (normalizedEmail != user.Email)
+                {
+                    var existing = await _repo.FindUserByEmailAsync(normalizedEmail);
+                    if (existing != null && existing.Id != userId)
+                        return (false, "Email đã được sử dụng bởi tài khoản khác.");
+                }
+            }
+
+            var ok = await _repo.UpdateUserProfileAsync(
+                userId,
+                req.FullName?.Trim() ?? user.FullName,
+                !string.IsNullOrWhiteSpace(req.Email) ? req.Email.Trim().ToLower() : user.Email);
+
+            return (ok, ok ? string.Empty : "Cập nhật thất bại.");
+        }
+
+        public async Task<(bool ok, string error)> ChangePasswordAsync(Guid userId, ChangePasswordRequest req)
+        {
+            if (string.IsNullOrWhiteSpace(req.NewPassword) || req.NewPassword.Length < 6)
+                return (false, "Mật khẩu mới phải có ít nhất 6 ký tự.");
+
+            var user = await _repo.GetUserByIdAsync(userId);
+            if (user == null)
+                return (false, "Người dùng không tồn tại.");
+
+            if (!BC.Verify(req.OldPassword, user.PasswordHash!))
+                return (false, "Mật khẩu cũ không đúng.");
+
+            var newHash = BC.HashPassword(req.NewPassword);
+            var ok = await _repo.UpdatePasswordHashAsync(userId, newHash);
+            return (ok, ok ? string.Empty : "Đổi mật khẩu thất bại.");
         }
 
         private string GenerateJwt(AppUser user)

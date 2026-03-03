@@ -66,6 +66,14 @@ namespace IScream.Data
             return rows > 0;
         }
 
+        public async Task<bool> UpdatePasswordHashAsync(Guid id, string newPasswordHash)
+        {
+            var rows = await ExecuteAsync(
+                "UPDATE public_data.USERS SET PasswordHash = @PasswordHash WHERE Id = @Id",
+                [P("@Id", id), P("@PasswordHash", newPasswordHash)]);
+            return rows > 0;
+        }
+
         public async Task<bool> SetUserActiveAsync(Guid id, bool isActive)
         {
             var rows = await ExecuteAsync(

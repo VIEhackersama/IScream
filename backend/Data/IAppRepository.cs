@@ -19,6 +19,7 @@ namespace IScream.Data
         Task<AppUser?> GetUserByIdAsync(Guid id);
         Task<Guid> CreateUserAsync(AppUser user);
         Task<bool> UpdateUserProfileAsync(Guid id, string? fullName, string? email);
+        Task<bool> UpdatePasswordHashAsync(Guid id, string newPasswordHash);
         Task<bool> SetUserActiveAsync(Guid id, bool isActive);
         Task<List<AppUser>> ListUsersAsync(int page, int pageSize);
         Task<int> CountUsersAsync();
