@@ -29,17 +29,24 @@ namespace IScream.Functions
         }
 
         [Function("Payments_Create")]
-        [OpenApiOperation(operationId: "Payments_Create", tags: new[] { "Payments" }, Summary = "Create payment", Description = "Creates a new payment record with INIT status.")]
+        [OpenApiOperation(operationId: "Payments_Create", tags: new[] { "Payments" }, Summary = "Create payment", Description = "Creates a new payment record with INIT status. Requires authentication.")]
         [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(CreatePaymentRequest), Required = true, Description = "Payment payload")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Created, contentType: "application/json", bodyType: typeof(ApiResponse<object>), Description = "Payment created")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.BadRequest, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Validation error")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Missing or invalid token")]
         public async Task<HttpResponseData> Create(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "payments")] HttpRequestData req)
         {
             try
             {
+                var claims = FunctionHelper.ExtractAuthClaims(req);
+                if (claims == null) return await FunctionHelper.Unauthorized(req);
+
                 var body = await req.ReadFromJsonAsync<CreatePaymentRequest>();
                 if (body == null) return await FunctionHelper.BadRequest(req, "Body không hợp lệ.");
+
+                // Force UserId from JWT to prevent spoofing
+                body.UserId = claims.Value.userId;
 
                 var (id, error) = await _svc.CreatePaymentAsync(body);
                 if (id == Guid.Empty) return await FunctionHelper.BadRequest(req, error);
@@ -50,35 +57,56 @@ namespace IScream.Functions
         }
 
         [Function("Payments_GetById")]
-        [OpenApiOperation(operationId: "Payments_GetById", tags: new[] { "Payments" }, Summary = "Get payment by ID", Description = "Returns a single payment by its GUID.")]
+        [OpenApiOperation(operationId: "Payments_GetById", tags: new[] { "Payments" }, Summary = "Get payment by ID", Description = "Returns a single payment by its GUID. Requires authentication (owner or admin).")]
         [OpenApiParameter(name: "id", In = ParameterLocation.Path, Required = true, Type = typeof(Guid), Description = "Payment ID")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(ApiResponse<Payment>), Description = "Payment detail")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Payment not found")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Missing or invalid token")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Not the payment owner or admin")]
         public async Task<HttpResponseData> GetById(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "payments/{id:guid}")] HttpRequestData req,
             Guid id)
         {
             try
             {
+                var claims = FunctionHelper.ExtractAuthClaims(req);
+                if (claims == null) return await FunctionHelper.Unauthorized(req);
+
                 var (payment, error) = await _svc.GetByIdAsync(id);
                 if (payment == null) return await FunctionHelper.NotFound(req, error);
+
+                // Only owner or admin can view payment details
+                if (payment.UserId != claims.Value.userId && claims.Value.role != "ADMIN")
+                    return await FunctionHelper.Forbidden(req);
+
                 return await FunctionHelper.Ok(req, payment);
             }
             catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(GetById)); }
         }
 
         [Function("Payments_Confirm")]
-        [OpenApiOperation(operationId: "Payments_Confirm", tags: new[] { "Payments" }, Summary = "Confirm payment", Description = "Confirms a payment (sets status to SUCCESS) and optionally links to an order or subscription.")]
+        [OpenApiOperation(operationId: "Payments_Confirm", tags: new[] { "Payments" }, Summary = "Confirm payment", Description = "Confirms a payment (sets status to SUCCESS) and optionally links to an order or subscription. Requires authentication (owner or admin).")]
         [OpenApiParameter(name: "id", In = ParameterLocation.Path, Required = true, Type = typeof(Guid), Description = "Payment ID")]
         [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(ConfirmPaymentRequest), Required = false, Description = "Optional linked entity")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Payment confirmed")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.BadRequest, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Validation error")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Missing or invalid token")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Not the payment owner or admin")]
         public async Task<HttpResponseData> Confirm(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "payments/{id:guid}/confirm")] HttpRequestData req,
             Guid id)
         {
             try
             {
+                var claims = FunctionHelper.ExtractAuthClaims(req);
+                if (claims == null) return await FunctionHelper.Unauthorized(req);
+
+                // Verify ownership: fetch payment and check UserId
+                var (payment, fetchError) = await _svc.GetByIdAsync(id);
+                if (payment == null) return await FunctionHelper.BadRequest(req, fetchError);
+                if (payment.UserId != claims.Value.userId && claims.Value.role != "ADMIN")
+                    return await FunctionHelper.Forbidden(req);
+
                 var body = await req.ReadFromJsonAsync<ConfirmPaymentRequest>();
                 var linkedEntityId = body?.LinkedEntityId;
 

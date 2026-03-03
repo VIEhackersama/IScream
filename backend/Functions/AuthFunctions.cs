@@ -70,5 +70,78 @@ namespace IScream.Functions
             }
             catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(Login)); }
         }
+
+        // GET /api/auth/me
+        [Function("Auth_Me")]
+        [OpenApiOperation(operationId: "Auth_Me", tags: new[] { "Auth" }, Summary = "Get current user", Description = "Returns the authenticated user's profile. Requires Bearer token.")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(ApiResponse<UserInfo>), Description = "Current user info")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Missing or invalid token")]
+        public async Task<HttpResponseData> Me(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "auth/me")] HttpRequestData req)
+        {
+            try
+            {
+                var claims = FunctionHelper.ExtractAuthClaims(req);
+                if (claims == null) return await FunctionHelper.Unauthorized(req);
+
+                var (user, error) = await _auth.GetMeAsync(claims.Value.userId);
+                if (user == null) return await FunctionHelper.NotFound(req, error);
+
+                return await FunctionHelper.Ok(req, user);
+            }
+            catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(Me)); }
+        }
+
+        // PUT /api/auth/profile
+        [Function("Auth_UpdateProfile")]
+        [OpenApiOperation(operationId: "Auth_UpdateProfile", tags: new[] { "Auth" }, Summary = "Update profile", Description = "Updates the authenticated user's profile (FullName, Email). Requires Bearer token.")]
+        [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(UpdateProfileRequest), Required = true, Description = "Profile fields to update")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Profile updated")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.BadRequest, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Validation error")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Missing or invalid token")]
+        public async Task<HttpResponseData> UpdateProfile(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "auth/profile")] HttpRequestData req)
+        {
+            try
+            {
+                var claims = FunctionHelper.ExtractAuthClaims(req);
+                if (claims == null) return await FunctionHelper.Unauthorized(req);
+
+                var body = await req.ReadFromJsonAsync<UpdateProfileRequest>();
+                if (body == null) return await FunctionHelper.BadRequest(req, "Body không hợp lệ.");
+
+                var (ok, error) = await _auth.UpdateProfileAsync(claims.Value.userId, body);
+                if (!ok) return await FunctionHelper.BadRequest(req, error);
+
+                return await FunctionHelper.OkMessage(req, "Cập nhật hồ sơ thành công.");
+            }
+            catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(UpdateProfile)); }
+        }
+
+        // PUT /api/auth/change-password
+        [Function("Auth_ChangePassword")]
+        [OpenApiOperation(operationId: "Auth_ChangePassword", tags: new[] { "Auth" }, Summary = "Change password", Description = "Changes the authenticated user's password. Requires Bearer token and current password.")]
+        [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(ChangePasswordRequest), Required = true, Description = "Old and new password")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Password changed")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.BadRequest, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Validation error (wrong old password, weak new password)")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Missing or invalid token")]
+        public async Task<HttpResponseData> ChangePassword(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "auth/change-password")] HttpRequestData req)
+        {
+            try
+            {
+                var claims = FunctionHelper.ExtractAuthClaims(req);
+                if (claims == null) return await FunctionHelper.Unauthorized(req);
+
+                var body = await req.ReadFromJsonAsync<ChangePasswordRequest>();
+                if (body == null) return await FunctionHelper.BadRequest(req, "Body không hợp lệ.");
+
+                var (ok, error) = await _auth.ChangePasswordAsync(claims.Value.userId, body);
+                if (!ok) return await FunctionHelper.BadRequest(req, error);
+
+                return await FunctionHelper.OkMessage(req, "Đổi mật khẩu thành công.");
+            }
+            catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(ChangePassword)); }
+        }
     }
 }
