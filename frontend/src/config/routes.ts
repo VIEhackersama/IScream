@@ -17,4 +17,6 @@ export const routes = {
   feedback: "/feedback",
   privacyPolicy: "/privacy-policy",
   careers: "/careers",
+  adminLogin: "/admin/login",
+  adminDashboard: "/admin",
 } as const;

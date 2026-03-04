@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { MaterialIcon, Button } from "@/components/ui";
 import { siteConfig, routes } from "@/config";
+import { useAuth } from "@/context/AuthContext";
 import type { NavLink } from "@/types";
 
 const navLinks: NavLink[] = [
@@ -15,6 +16,7 @@ const navLinks: NavLink[] = [
 
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user, isLoggedIn, logout } = useAuth();
 
   return (
     <div className="sticky top-0 z-50 flex w-full justify-center p-4">
@@ -58,16 +60,33 @@ export function Navbar() {
 
           {/* Auth buttons (desktop) */}
           <div className="hidden md:flex items-center gap-2">
-            <Link href={routes.register}>
-              <Button variant="outline" className="h-10 px-5 text-sm border-primary/30 hover:border-primary hover:bg-primary/5">
-                Register
-              </Button>
-            </Link>
-            <Link href={routes.login}>
-              <Button className="h-10 px-6 text-sm shadow-md shadow-primary/20 hover:shadow-primary/40 transition-shadow">
-                Login
-              </Button>
-            </Link>
+            {isLoggedIn ? (
+              <>
+                <span className="text-sm font-semibold text-text-muted dark:text-gray-300 truncate max-w-[120px]">
+                  👋 {user?.fullName ?? user?.username}
+                </span>
+                <Button
+                  variant="outline"
+                  className="h-10 px-5 text-sm border-primary/30 hover:border-primary hover:bg-primary/5"
+                  onClick={logout}
+                >
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link href={routes.register}>
+                  <Button variant="outline" className="h-10 px-5 text-sm border-primary/30 hover:border-primary hover:bg-primary/5">
+                    Register
+                  </Button>
+                </Link>
+                <Link href={routes.login}>
+                  <Button className="h-10 px-6 text-sm shadow-md shadow-primary/20 hover:shadow-primary/40 transition-shadow">
+                    Login
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -87,12 +106,23 @@ export function Navbar() {
               </Link>
             ))}
             <div className="flex gap-3 mt-4">
-              <Link href={routes.register} onClick={() => setMobileMenuOpen(false)}>
-                <Button variant="outline" className="h-12 px-6 text-base border-primary/30">Register</Button>
-              </Link>
-              <Link href={routes.login} onClick={() => setMobileMenuOpen(false)}>
-                <Button className="h-12 px-6 text-base">Login</Button>
-              </Link>
+              {isLoggedIn ? (
+                <Button
+                  className="h-12 px-6 text-base"
+                  onClick={() => { logout(); setMobileMenuOpen(false); }}
+                >
+                  Logout
+                </Button>
+              ) : (
+                <>
+                  <Link href={routes.register} onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="outline" className="h-12 px-6 text-base border-primary/30">Register</Button>
+                  </Link>
+                  <Link href={routes.login} onClick={() => setMobileMenuOpen(false)}>
+                    <Button className="h-12 px-6 text-base">Login</Button>
+                  </Link>
+                </>
+              )}
             </div>
           </nav>
         </div>

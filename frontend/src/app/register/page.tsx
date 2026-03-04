@@ -13,7 +13,6 @@ interface FormData {
     username: string;
     email: string;
     password: string;
-    membership: "monthly" | "yearly";
 }
 
 interface FormErrors {
@@ -55,7 +54,6 @@ export default function RegisterPage() {
         username: "",
         email: "",
         password: "",
-        membership: "yearly",
     });
     const [errors, setErrors] = useState<FormErrors>({});
     const [loading, setLoading] = useState(false);
@@ -206,48 +204,6 @@ export default function RegisterPage() {
                                         {errors.password && <p className="pl-3 text-xs text-red-500">{errors.password}</p>}
                                     </div>
 
-                                    {/* Membership */}
-                                    <div className="flex flex-col gap-2">
-                                        <label className="text-sm font-semibold text-text-main">Choose your flavor</label>
-                                        <div className="grid grid-cols-2 gap-3">
-                                            {/* Monthly */}
-                                            <label className="cursor-pointer">
-                                                <input
-                                                    type="radio" name="membership" value="monthly"
-                                                    checked={form.membership === "monthly"}
-                                                    onChange={() => setForm((p) => ({ ...p, membership: "monthly" }))}
-                                                    className="peer sr-only"
-                                                />
-                                                <div className="flex flex-col rounded-2xl border border-gray-200 bg-white p-4 transition-all hover:border-primary/50 peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:ring-1 peer-checked:ring-primary">
-                                                    <span className="text-xs font-semibold text-text-muted">Scoop of the Month</span>
-                                                    <p className="mt-2 text-xl font-black text-text-main">
-                                                        $15<span className="text-xs font-medium text-text-muted">/mo</span>
-                                                    </p>
-                                                </div>
-                                            </label>
-                                            {/* Yearly */}
-                                            <label className="cursor-pointer">
-                                                <input
-                                                    type="radio" name="membership" value="yearly"
-                                                    checked={form.membership === "yearly"}
-                                                    onChange={() => setForm((p) => ({ ...p, membership: "yearly" }))}
-                                                    className="peer sr-only"
-                                                />
-                                                <div className="relative flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white p-4 transition-all hover:border-primary/50 peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:ring-1 peer-checked:ring-primary">
-                                                    <div className={`absolute -right-px -top-px rounded-bl-xl bg-primary px-2.5 py-0.5 text-[10px] font-bold text-white transition-opacity ${form.membership === "yearly" ? "opacity-100" : "opacity-50"}`}>
-                                                        BEST VALUE
-                                                    </div>
-                                                    <span className="text-xs font-semibold text-text-muted">The Whole Sundae</span>
-                                                    <p className="mt-2 text-xl font-black text-text-main">
-                                                        $150<span className="text-xs font-medium text-text-muted">/yr</span>
-                                                    </p>
-                                                </div>
-                                            </label>
-                                        </div>
-                                        <p className="pl-1 text-xs text-text-muted">
-                                            * Includes secret recipes &amp; monthly book delivery.
-                                        </p>
-                                    </div>
 
                                     {/* Submit */}
                                     <button
