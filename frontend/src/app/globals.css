@@ -149,3 +149,9 @@ input:-webkit-autofill:focus {
 .animation-delay-4000 {
   animation-delay: 4s;
 }
+/* app/globals.css */
+/* sprinkle pattern used in Privacy page */
+.sprinkle-pattern {
+  background-image: radial-gradient(circle at 2px 2px, #ff85a2 1px, transparent 0);
+  background-size: 24px 24px;
+}
