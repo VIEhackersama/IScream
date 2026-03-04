@@ -5,7 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { MaterialIcon } from "@/components/ui";
-import { authService, extractApiError } from "@/services";
+import { extractApiError } from "@/services";
+import { useAuth } from "@/context/AuthContext";
 import { routes } from "@/config";
 
 interface FormData {
@@ -29,6 +30,7 @@ function validate(data: FormData): FormErrors {
 
 export default function LoginPage() {
     const router = useRouter();
+    const { login } = useAuth();
     const [form, setForm] = useState<FormData>({ usernameOrEmail: "", password: "", rememberMe: false });
     const [errors, setErrors] = useState<FormErrors>({});
     const [loading, setLoading] = useState(false);
@@ -47,7 +49,7 @@ export default function LoginPage() {
         setLoading(true);
         setErrors({});
         try {
-            await authService.login({ usernameOrEmail: form.usernameOrEmail.trim(), password: form.password });
+            await login({ usernameOrEmail: form.usernameOrEmail.trim(), password: form.password });
             router.push(routes.home);
         } catch (err: unknown) {
             setErrors({ general: extractApiError(err, "Login failed. Please try again.") });

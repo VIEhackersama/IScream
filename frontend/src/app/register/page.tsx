@@ -5,7 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { MaterialIcon } from "@/components/ui";
-import { authService, extractApiError } from "@/services";
+import { extractApiError } from "@/services";
+import { useAuth } from "@/context/AuthContext";
 import { routes } from "@/config";
 
 interface FormData {
@@ -49,6 +50,7 @@ function validate(data: FormData): FormErrors {
 
 export default function RegisterPage() {
     const router = useRouter();
+    const { register, login } = useAuth();
     const [form, setForm] = useState<FormData>({
         fullName: "",
         username: "",
@@ -72,14 +74,19 @@ export default function RegisterPage() {
         setLoading(true);
         setErrors({});
         try {
-            await authService.register({
+            await register({
                 username: form.username.trim(),
                 password: form.password,
                 email: form.email.trim() || undefined,
                 fullName: form.fullName.trim() || undefined,
             });
+            // Auto-login instantly after successful registration
+            await login({
+                usernameOrEmail: form.username.trim(),
+                password: form.password
+            });
             setSuccess(true);
-            setTimeout(() => router.push(routes.login), 2000);
+            setTimeout(() => router.push(routes.home), 1500);
         } catch (err: unknown) {
             setErrors({ general: extractApiError(err, "Registration failed. Please try again.") });
         } finally {

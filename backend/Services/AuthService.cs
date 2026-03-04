@@ -4,6 +4,7 @@
 #nullable enable
 
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using IScream.Data;
@@ -20,6 +21,8 @@ namespace IScream.Services
         Task<(UserInfo? user, string error)> GetMeAsync(Guid userId);
         Task<(bool ok, string error)> UpdateProfileAsync(Guid userId, UpdateProfileRequest req);
         Task<(bool ok, string error)> ChangePasswordAsync(Guid userId, ChangePasswordRequest req);
+        Task<PagedResult<UserSummary>> ListUsersAsync(int page, int pageSize);
+        Task<(bool ok, string error)> SetUserActiveAsync(Guid userId, bool isActive);
     }
 
     public class AuthService : IAuthService
@@ -161,6 +164,37 @@ namespace IScream.Services
             var newHash = BC.HashPassword(req.NewPassword);
             var ok = await _repo.UpdatePasswordHashAsync(userId, newHash);
             return (ok, ok ? string.Empty : "Password change failed.");
+        }
+
+        public async Task<PagedResult<UserSummary>> ListUsersAsync(int page, int pageSize)
+        {
+            var users = await _repo.ListUsersAsync(page, pageSize);
+            var total = await _repo.CountUsersAsync();
+            var summaries = users.Select(u => new UserSummary
+            {
+                Id = u.Id,
+                Username = u.Username,
+                FullName = u.FullName,
+                Email = u.Email,
+                Role = u.Role,
+                IsActive = u.IsActive,
+                CreatedAt = u.CreatedAt
+            }).ToList();
+            return new PagedResult<UserSummary>
+            {
+                Items = summaries,
+                Page = page,
+                PageSize = pageSize,
+                Total = total
+            };
+        }
+
+        public async Task<(bool ok, string error)> SetUserActiveAsync(Guid userId, bool isActive)
+        {
+            var user = await _repo.GetUserByIdAsync(userId);
+            if (user == null) return (false, "User not found.");
+            var ok = await _repo.SetUserActiveAsync(userId, isActive);
+            return (ok, ok ? string.Empty : "Failed to update user status.");
         }
 
         private string GenerateJwt(AppUser user)

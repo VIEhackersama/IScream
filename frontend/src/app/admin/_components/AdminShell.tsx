@@ -33,7 +33,7 @@ const NAV_STANDALONE: NavItem[] = [
 
 const NAV_CONTENT: NavItem[] = [
     { id: "recipes", label: "Recipes", icon: "icecream", href: "/admin/recipes" },
-    { id: "books", label: "Books", icon: "menu_book", href: "/admin/books" },
+    { id: "books", label: "Books", icon: "menu_book", href: "#" },
 ];
 
 const NAV_COMMUNITY: NavItem[] = [
@@ -42,7 +42,7 @@ const NAV_COMMUNITY: NavItem[] = [
 ];
 
 const NAV_SYSTEM: NavItem[] = [
-    { id: "settings", label: "Settings", icon: "settings", href: "/admin/settings" },
+    { id: "settings", label: "Settings", icon: "settings", href: "#" },
 ];
 
 interface Props {
@@ -55,15 +55,15 @@ function NavLink({ item, active }: { item: NavItem; active: boolean }) {
     return (
         <Link
             href={item.href}
-            className={`flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-semibold transition-all ${active
-                    ? "bg-primary/10 text-primary"
-                    : "text-gray-500 hover:bg-gray-50 hover:text-text-main"
+            className={`group flex items-center gap-3.5 rounded-2xl px-4 py-3 text-[14px] font-bold transition-all ${active
+                ? "bg-primary text-white shadow-md shadow-primary/20"
+                : "text-gray-500 hover:bg-white hover:text-text-main hover:shadow-sm"
                 }`}
         >
             <MaterialIcon
                 name={item.icon}
                 filled={active}
-                className={`text-[18px] shrink-0 ${active ? "text-primary" : "text-gray-400"}`}
+                className={`text-[20px] shrink-0 ${active ? "text-white" : "text-gray-400 group-hover:text-primary"}`}
             />
             {item.label}
         </Link>

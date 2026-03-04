@@ -49,7 +49,23 @@ async function request<T>(
     );
   }
 
-  return res.json() as Promise<T>;
+  // Helper to convert PascalCase keys to camelCase deeply
+  function camelizeKeys(obj: any): any {
+    if (Array.isArray(obj)) {
+      return obj.map(v => camelizeKeys(v));
+    } else if (obj !== null && typeof obj === 'object') {
+      return Object.keys(obj).reduce((result, key) => {
+        let camelKey = key.charAt(0).toLowerCase() + key.slice(1);
+        if (key === 'ID') camelKey = 'id';
+        result[camelKey as keyof typeof result] = camelizeKeys(obj[key]);
+        return result;
+      }, {} as any);
+    }
+    return obj;
+  }
+
+  const data = await res.json();
+  return camelizeKeys(data) as T;
 }
 
 export const apiClient = {

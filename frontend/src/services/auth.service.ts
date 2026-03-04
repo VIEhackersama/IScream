@@ -95,8 +95,9 @@ export function extractApiError(err: unknown, fallback: string): string {
     if (colonIdx !== -1) {
         try {
             const raw = err.message.slice(colonIdx + 3);
-            const parsed = JSON.parse(raw) as { message?: string };
+            const parsed = JSON.parse(raw) as { message?: string, Message?: string };
             if (parsed.message) return parsed.message;
+            if (parsed.Message) return parsed.Message;
         } catch {
             // fall through
         }

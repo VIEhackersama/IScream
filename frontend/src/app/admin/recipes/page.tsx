@@ -339,7 +339,7 @@ export default function AdminRecipesPage() {
     }
 
     return (
-        <AdminShell activePage="recipes" breadcrumb="Recipes">
+        <AdminShell activePage="recipes" pageTitle="Recipe Management">
 
             {/* ── Header ── */}
             <div className="mb-6 flex items-start justify-between">
@@ -382,8 +382,8 @@ export default function AdminRecipesPage() {
                             key={cat}
                             onClick={() => setActiveCategory(cat)}
                             className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-all ${activeCategory === cat
-                                    ? "bg-text-main text-white"
-                                    : "bg-gray-100 text-text-muted hover:bg-gray-200"
+                                ? "bg-text-main text-white"
+                                : "bg-gray-100 text-text-muted hover:bg-gray-200"
                                 }`}
                         >
                             {cat}

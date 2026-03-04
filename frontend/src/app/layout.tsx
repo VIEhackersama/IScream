@@ -34,7 +34,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="light" suppressHydrationWarning>
+    <html lang="en" className="light" suppressHydrationWarning data-scroll-behavior="smooth">
       <head>
         {/* Material Symbols Outlined */}
         <link

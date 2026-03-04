@@ -62,15 +62,29 @@ export function Navbar() {
           <div className="hidden md:flex items-center gap-2">
             {isLoggedIn ? (
               <>
-                <span className="text-sm font-semibold text-text-muted dark:text-gray-300 truncate max-w-[120px]">
-                  👋 {user?.fullName ?? user?.username}
-                </span>
+                {user?.role === "ADMIN" && (
+                  <Link href={routes.adminDashboard}>
+                    <Button className="h-10 px-4 text-sm bg-black hover:bg-gray-800 text-white shadow-md transition-shadow mr-2">
+                      <MaterialIcon name="admin_panel_settings" className="mr-2 text-[18px]" />
+                      Admin Portal
+                    </Button>
+                  </Link>
+                )}
+                <Link href={routes.profile}>
+                  <Button variant="outline" className="h-10 px-4 text-sm border-gray-200 hover:border-primary hover:bg-primary/5 hover:text-primary transition-colors flex items-center gap-2">
+                    <MaterialIcon name="person" className="text-[18px]" />
+                    <span className="truncate max-w-[120px] font-bold">
+                      {user?.fullName ?? user?.username}
+                    </span>
+                  </Button>
+                </Link>
                 <Button
                   variant="outline"
-                  className="h-10 px-5 text-sm border-primary/30 hover:border-primary hover:bg-primary/5"
+                  className="h-10 w-10 p-0 text-sm border-gray-200 hover:border-red-500 hover:bg-red-50 hover:text-red-600 flex items-center justify-center transition-colors"
                   onClick={logout}
+                  title="Logout"
                 >
-                  Logout
+                  <MaterialIcon name="logout" className="text-[18px]" />
                 </Button>
               </>
             ) : (
@@ -105,14 +119,32 @@ export function Navbar() {
                 {link.label}
               </Link>
             ))}
-            <div className="flex gap-3 mt-4">
+            <div className="flex gap-3 mt-4 flex-wrap justify-center">
               {isLoggedIn ? (
-                <Button
-                  className="h-12 px-6 text-base"
-                  onClick={() => { logout(); setMobileMenuOpen(false); }}
-                >
-                  Logout
-                </Button>
+                <>
+                  {user?.role === "ADMIN" && (
+                    <Link href={routes.adminDashboard} onClick={() => setMobileMenuOpen(false)}>
+                      <Button className="h-12 px-6 text-base bg-black hover:bg-gray-800 text-white w-full">
+                        <MaterialIcon name="admin_panel_settings" className="mr-2 text-[20px]" />
+                        Admin Portal
+                      </Button>
+                    </Link>
+                  )}
+                  <Link href={routes.profile} onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="outline" className="h-12 px-6 text-base border-gray-200 flex items-center gap-2">
+                      <MaterialIcon name="person" className="text-[20px]" />
+                      My Account ({user?.fullName ?? user?.username})
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="outline"
+                    className="h-12 px-6 text-base border-red-200 text-red-600 hover:bg-red-50 flex items-center gap-2"
+                    onClick={() => { logout(); setMobileMenuOpen(false); }}
+                  >
+                    <MaterialIcon name="logout" className="text-[20px]" />
+                    Logout
+                  </Button>
+                </>
               ) : (
                 <>
                   <Link href={routes.register} onClick={() => setMobileMenuOpen(false)}>
