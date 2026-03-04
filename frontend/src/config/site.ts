@@ -14,6 +14,6 @@ export const siteConfig = {
     twitter: "#",
     instagram: "#",
   },
-  founder: "Mr. A",
+  founder: "D.Pham",
   foundedYear: 2010,
 } as const;

@@ -97,7 +97,8 @@ namespace IScream.Data
             if (parms != null) cmd.Parameters.AddRange(parms);
             var raw = await cmd.ExecuteScalarAsync();
             if (raw == null || raw == DBNull.Value) return default;
-            return (TVal)Convert.ChangeType(raw, typeof(TVal));
+            var targetType = Nullable.GetUnderlyingType(typeof(TVal)) ?? typeof(TVal);
+            return (TVal)Convert.ChangeType(raw, targetType);
         }
     }
 }
