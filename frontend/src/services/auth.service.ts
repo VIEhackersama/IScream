@@ -8,7 +8,7 @@
  * ApiResponse shape: { success: bool, message?: string, data?: T, timestamp: string }
  *
  * On failure the backend still returns 4xx with JSON body:
- *   { success: false, message: "<Vietnamese error string>", data: null }
+ *   { success: false, message: "<error string>", data: null }
  *
  * The api-client throws on !res.ok with message:
  *   "API POST /path failed (400): <raw response text>"
@@ -110,7 +110,7 @@ export const authService = {
     /**
      * POST /api/auth/register
      * Returns the new user's UUID on success.
-     * Throws with Vietnamese error message on failure.
+     * Throws with error message on failure.
      */
     async register(data: RegisterRequest): Promise<RegisterResponse> {
         const res = await apiClient.post<ApiResponse<RegisterResponse>>(
@@ -122,14 +122,14 @@ export const authService = {
                 fullName: data.fullName || undefined,
             },
         );
-        if (!res.success) throw new Error(res.message ?? "Đăng ký thất bại.");
+        if (!res.success) throw new Error(res.message ?? "Registration failed.");
         return res.data!;
     },
 
     /**
      * POST /api/auth/login
      * Saves JWT + user info to localStorage on success.
-     * Throws with Vietnamese error message on failure.
+     * Throws with error message on failure.
      */
     async login(data: LoginRequest): Promise<LoginResponse> {
         const res = await apiClient.post<ApiResponse<LoginResponse>>(
@@ -139,7 +139,7 @@ export const authService = {
                 password: data.password,
             },
         );
-        if (!res.success) throw new Error(res.message ?? "Đăng nhập thất bại.");
+        if (!res.success) throw new Error(res.message ?? "Login failed.");
         const loginData = res.data!;
         tokenStorage.save(loginData.token, loginData.user);
         return loginData;

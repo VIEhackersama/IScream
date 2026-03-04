@@ -34,16 +34,16 @@ namespace IScream.Services
         public async Task<(Guid subId, string error)> SubscribeAsync(SubscribeRequest req)
         {
             if (req.UserId == Guid.Empty)
-                return (Guid.Empty, "UserId không hợp lệ.");
+                return (Guid.Empty, "Invalid UserId.");
 
             var plan = await _repo.GetPlanByIdAsync(req.PlanId);
             if (plan == null)
-                return (Guid.Empty, "Plan không tồn tại hoặc đã ngừng hoạt động.");
+                return (Guid.Empty, "Plan not found or is no longer active.");
 
             // Check existing active subscription for same plan
             var existing = await _repo.GetActiveSubscriptionAsync(req.UserId);
             if (existing != null && existing.PlanId == req.PlanId)
-                return (Guid.Empty, "Bạn đang có subscription đang hoạt động cho plan này.");
+                return (Guid.Empty, "You already have an active subscription for this plan.");
 
             var now = DateTime.UtcNow;
             var sub = new MembershipSubscription

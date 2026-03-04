@@ -17,6 +17,9 @@ namespace IScream.Services
     {
         Task<(bool ok, string error, Guid userId)> RegisterAsync(RegisterRequest req);
         Task<(bool ok, string error, LoginResponse? response)> LoginAsync(LoginRequest req);
+        Task<(UserInfo? user, string error)> GetMeAsync(Guid userId);
+        Task<(bool ok, string error)> UpdateProfileAsync(Guid userId, UpdateProfileRequest req);
+        Task<(bool ok, string error)> ChangePasswordAsync(Guid userId, ChangePasswordRequest req);
     }
 
     public class AuthService : IAuthService
@@ -38,20 +41,20 @@ namespace IScream.Services
         public async Task<(bool ok, string error, Guid userId)> RegisterAsync(RegisterRequest req)
         {
             if (string.IsNullOrWhiteSpace(req.Username) || req.Username.Length < 3)
-                return (false, "Username phải có ít nhất 3 ký tự.", Guid.Empty);
+                return (false, "Username must be at least 3 characters.", Guid.Empty);
 
             if (string.IsNullOrWhiteSpace(req.Password) || req.Password.Length < 6)
-                return (false, "Password phải có ít nhất 6 ký tự.", Guid.Empty);
+                return (false, "Password must be at least 6 characters.", Guid.Empty);
 
             var existing = await _repo.FindUserByUsernameAsync(req.Username.Trim());
             if (existing != null)
-                return (false, "Username đã tồn tại.", Guid.Empty);
+                return (false, "Username already exists.", Guid.Empty);
 
             if (!string.IsNullOrWhiteSpace(req.Email))
             {
                 var byEmail = await _repo.FindUserByEmailAsync(req.Email.Trim().ToLower());
                 if (byEmail != null)
-                    return (false, "Email đã được sử dụng.", Guid.Empty);
+                    return (false, "Email is already in use.", Guid.Empty);
             }
 
             var user = new AppUser
@@ -70,7 +73,7 @@ namespace IScream.Services
         public async Task<(bool ok, string error, LoginResponse? response)> LoginAsync(LoginRequest req)
         {
             if (string.IsNullOrWhiteSpace(req.UsernameOrEmail))
-                return (false, "UsernameOrEmail không được để trống.", null);
+                return (false, "UsernameOrEmail is required.", null);
 
             AppUser? user;
             if (req.UsernameOrEmail.Contains('@'))
@@ -79,10 +82,10 @@ namespace IScream.Services
                 user = await _repo.FindUserByUsernameAsync(req.UsernameOrEmail.Trim());
 
             if (user == null || !BC.Verify(req.Password, user.PasswordHash!))
-                return (false, "Sai tài khoản hoặc mật khẩu.", null);
+                return (false, "Invalid username or password.", null);
 
             if (!user.IsActive)
-                return (false, "Tài khoản đã bị vô hiệu hóa.", null);
+                return (false, "Account has been deactivated.", null);
 
             var token = GenerateJwt(user);
             var response = new LoginResponse
@@ -99,6 +102,65 @@ namespace IScream.Services
                 }
             };
             return (true, string.Empty, response);
+        }
+
+        public async Task<(UserInfo? user, string error)> GetMeAsync(Guid userId)
+        {
+            var user = await _repo.GetUserByIdAsync(userId);
+            if (user == null)
+                return (null, "User not found.");
+
+            return (new UserInfo
+            {
+                Id = user.Id,
+                Username = user.Username,
+                FullName = user.FullName,
+                Email = user.Email,
+                Role = user.Role
+            }, string.Empty);
+        }
+
+        public async Task<(bool ok, string error)> UpdateProfileAsync(Guid userId, UpdateProfileRequest req)
+        {
+            var user = await _repo.GetUserByIdAsync(userId);
+            if (user == null)
+                return (false, "User not found.");
+
+            // If email is being changed, check uniqueness
+            if (!string.IsNullOrWhiteSpace(req.Email))
+            {
+                var normalizedEmail = req.Email.Trim().ToLower();
+                if (normalizedEmail != user.Email)
+                {
+                    var existing = await _repo.FindUserByEmailAsync(normalizedEmail);
+                    if (existing != null && existing.Id != userId)
+                        return (false, "Email is already in use by another account.");
+                }
+            }
+
+            var ok = await _repo.UpdateUserProfileAsync(
+                userId,
+                req.FullName?.Trim() ?? user.FullName,
+                !string.IsNullOrWhiteSpace(req.Email) ? req.Email.Trim().ToLower() : user.Email);
+
+            return (ok, ok ? string.Empty : "Update failed.");
+        }
+
+        public async Task<(bool ok, string error)> ChangePasswordAsync(Guid userId, ChangePasswordRequest req)
+        {
+            if (string.IsNullOrWhiteSpace(req.NewPassword) || req.NewPassword.Length < 6)
+                return (false, "New password must be at least 6 characters.");
+
+            var user = await _repo.GetUserByIdAsync(userId);
+            if (user == null)
+                return (false, "User not found.");
+
+            if (!BC.Verify(req.OldPassword, user.PasswordHash!))
+                return (false, "Old password is incorrect.");
+
+            var newHash = BC.HashPassword(req.NewPassword);
+            var ok = await _repo.UpdatePasswordHashAsync(userId, newHash);
+            return (ok, ok ? string.Empty : "Password change failed.");
         }
 
         private string GenerateJwt(AppUser user)

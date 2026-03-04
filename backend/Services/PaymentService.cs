@@ -25,13 +25,13 @@ namespace IScream.Services
         public async Task<(Guid paymentId, string error)> CreatePaymentAsync(CreatePaymentRequest req)
         {
             if (req.Amount <= 0)
-                return (Guid.Empty, "Amount phải lớn hơn 0.");
+                return (Guid.Empty, "Amount must be greater than 0.");
             if (string.IsNullOrWhiteSpace(req.Type))
-                return (Guid.Empty, "Type không được để trống (ORDER | MEMBERSHIP).");
+                return (Guid.Empty, "Type is required (ORDER | MEMBERSHIP).");
 
             var validTypes = new[] { "ORDER", "MEMBERSHIP" };
             if (!validTypes.Contains(req.Type.ToUpper()))
-                return (Guid.Empty, "Type phải là ORDER hoặc MEMBERSHIP.");
+                return (Guid.Empty, "Type must be ORDER or MEMBERSHIP.");
 
             var payment = new Payment
             {
@@ -50,14 +50,14 @@ namespace IScream.Services
         {
             var payment = await _repo.GetPaymentByIdAsync(paymentId);
             if (payment == null)
-                return (false, "Payment không tồn tại.");
+                return (false, "Payment not found.");
             if (payment.Status != "INIT")
-                return (false, $"Payment ở trạng thái {payment.Status}, không thể confirm.");
+                return (false, $"Payment is in {payment.Status} state and cannot be confirmed.");
 
             // Update payment status → SUCCESS
             var confirmed = await _repo.ConfirmPaymentAsync(paymentId);
             if (!confirmed)
-                return (false, "Confirm payment thất bại.");
+                return (false, "Payment confirmation failed.");
 
             // Side-effects based on Type
             if (linkedEntityId.HasValue)
@@ -81,7 +81,7 @@ namespace IScream.Services
         public async Task<(Payment? payment, string error)> GetByIdAsync(Guid id)
         {
             var payment = await _repo.GetPaymentByIdAsync(id);
-            return payment == null ? (null, "Payment không tồn tại.") : (payment, string.Empty);
+            return payment == null ? (null, "Payment not found.") : (payment, string.Empty);
         }
     }
 }

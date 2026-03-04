@@ -23,7 +23,7 @@ namespace IScream.Services
         public async Task<(Guid id, string error)> SubmitAsync(CreateFeedbackRequest req)
         {
             if (string.IsNullOrWhiteSpace(req.Message) || req.Message.Trim().Length < 5)
-                return (Guid.Empty, "Message phải có ít nhất 5 ký tự.");
+                return (Guid.Empty, "Message must be at least 5 characters.");
 
             var fb = new Feedback
             {

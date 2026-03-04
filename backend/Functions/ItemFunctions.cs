@@ -12,6 +12,7 @@ using IScream.Services;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.Logging;
 using System.Net;
@@ -76,6 +77,7 @@ namespace IScream.Functions
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.BadRequest, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Validation error")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Missing or invalid token")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Not an admin")]
+        [OpenApiSecurity("bearer_auth", SecuritySchemeType.Http, Scheme = OpenApiSecuritySchemeType.Bearer, BearerFormat = "JWT")]
         public async Task<HttpResponseData> Create(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "management/items")] HttpRequestData req)
         {
@@ -86,12 +88,12 @@ namespace IScream.Functions
                 if (claims.Value.role != "ADMIN") return await FunctionHelper.Forbidden(req);
 
                 var body = await req.ReadFromJsonAsync<CreateItemRequest>();
-                if (body == null) return await FunctionHelper.BadRequest(req, "Body không hợp lệ.");
+                if (body == null) return await FunctionHelper.BadRequest(req, "Invalid request body.");
 
                 var (id, error) = await _svc.CreateAsync(body);
                 if (id == Guid.Empty) return await FunctionHelper.BadRequest(req, error);
 
-                return await FunctionHelper.Created(req, new { id }, "Tạo item thành công.");
+                return await FunctionHelper.Created(req, new { id }, "Item created successfully.");
             }
             catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(Create)); }
         }
@@ -104,6 +106,7 @@ namespace IScream.Functions
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.BadRequest, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Validation error")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Missing or invalid token")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Not an admin")]
+        [OpenApiSecurity("bearer_auth", SecuritySchemeType.Http, Scheme = OpenApiSecuritySchemeType.Bearer, BearerFormat = "JWT")]
         public async Task<HttpResponseData> Update(
             [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "management/items/{id:guid}")] HttpRequestData req,
             Guid id)
@@ -115,12 +118,12 @@ namespace IScream.Functions
                 if (claims.Value.role != "ADMIN") return await FunctionHelper.Forbidden(req);
 
                 var body = await req.ReadFromJsonAsync<UpdateItemRequest>();
-                if (body == null) return await FunctionHelper.BadRequest(req, "Body không hợp lệ.");
+                if (body == null) return await FunctionHelper.BadRequest(req, "Invalid request body.");
 
                 var (ok, error) = await _svc.UpdateAsync(id, body);
                 if (!ok) return await FunctionHelper.BadRequest(req, error);
 
-                return await FunctionHelper.OkMessage(req, "Cập nhật item thành công.");
+                return await FunctionHelper.OkMessage(req, "Item updated successfully.");
             }
             catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(Update)); }
         }

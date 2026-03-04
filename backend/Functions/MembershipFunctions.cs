@@ -12,6 +12,7 @@ using IScream.Services;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.Logging;
 using System.Net;
@@ -47,6 +48,7 @@ namespace IScream.Functions
         [OpenApiOperation(operationId: "Membership_Me", tags: new[] { "Membership" }, Summary = "Get my subscription", Description = "Returns the current user's active membership subscription. Requires authentication.")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(ApiResponse<MembershipSubscription>), Description = "Active subscription")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Missing or invalid token")]
+        [OpenApiSecurity("bearer_auth", SecuritySchemeType.Http, Scheme = OpenApiSecuritySchemeType.Bearer, BearerFormat = "JWT")]
         public async Task<HttpResponseData> GetMe(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "membership/me")] HttpRequestData req)
         {
@@ -65,6 +67,7 @@ namespace IScream.Functions
         [OpenApiOperation(operationId: "Membership_History", tags: new[] { "Membership" }, Summary = "Subscription history", Description = "Returns the current user's subscription history. Requires authentication.")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(ApiResponse<List<MembershipSubscription>>), Description = "Subscription history")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Missing or invalid token")]
+        [OpenApiSecurity("bearer_auth", SecuritySchemeType.Http, Scheme = OpenApiSecuritySchemeType.Bearer, BearerFormat = "JWT")]
         public async Task<HttpResponseData> GetHistory(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "membership/history")] HttpRequestData req)
         {
@@ -85,6 +88,7 @@ namespace IScream.Functions
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Created, contentType: "application/json", bodyType: typeof(ApiResponse<object>), Description = "Subscription created")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.BadRequest, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Validation error")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Missing or invalid token")]
+        [OpenApiSecurity("bearer_auth", SecuritySchemeType.Http, Scheme = OpenApiSecuritySchemeType.Bearer, BearerFormat = "JWT")]
         public async Task<HttpResponseData> Subscribe(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "membership/subscribe")] HttpRequestData req)
         {
@@ -94,7 +98,7 @@ namespace IScream.Functions
                 if (claims == null) return await FunctionHelper.Unauthorized(req);
 
                 var body = await req.ReadFromJsonAsync<SubscribeRequest>();
-                if (body == null) return await FunctionHelper.BadRequest(req, "Body không hợp lệ.");
+                if (body == null) return await FunctionHelper.BadRequest(req, "Invalid request body.");
 
                 // Force userId from JWT to prevent spoofing
                 body.UserId = claims.Value.userId;
@@ -102,7 +106,7 @@ namespace IScream.Functions
                 var (subId, error) = await _svc.SubscribeAsync(body);
                 if (subId == Guid.Empty) return await FunctionHelper.BadRequest(req, error);
 
-                return await FunctionHelper.Created(req, new { subscriptionId = subId }, "Đăng ký membership thành công.");
+                return await FunctionHelper.Created(req, new { subscriptionId = subId }, "Membership subscription created successfully.");
             }
             catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(Subscribe)); }
         }

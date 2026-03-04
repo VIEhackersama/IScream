@@ -4,8 +4,7 @@ export default function AboutPage() {
     <div className="flex flex-col items-center w-full">
       {/* Hero Section */}
       <div className="w-full max-w-[1280px] px-4 md:px-10 py-12 md:py-20">
-        {/* NOTE: Nếu bạn CHƯA có plugin container-queries thì các class @container / @[...] sẽ không ăn.
-            Mình vẫn giữ để UI y hệt HTML. Xem mục (4) bên dưới để bật plugin. */}
+        {/* NOTE: Container query classes (@container / @[...]) require the container-queries plugin. */}
         <div className="@container">
           <div className="flex flex-col gap-10 px-4 py-6 @[480px]:gap-12 @[864px]:flex-row items-center">
             <div className="w-full @[864px]:w-1/2 flex flex-col gap-6">
@@ -137,7 +136,7 @@ export default function AboutPage() {
               Recipe Book Published
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mt-2">
-              "Scoops of Joy" hit the shelves, sharing Mr. A's secret techniques
+              "Scoops of Joy" hit the shelves, sharing IScream's secret techniques
               with home cooks around the world.
             </p>
           </div>

@@ -1,3 +1,5 @@
+import { tokenStorage } from "@/services/auth.service";
+
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:7071/api";
 
@@ -9,8 +11,7 @@ interface FetchOptions extends Omit<RequestInit, "method" | "body"> {
 
 /**
  * Thin wrapper around fetch that points to the backend API.
- * Handles JSON serialisation, query params, and base-URL logic
- * so individual service files stay lean.
+ * Automatically attaches JWT Bearer token from localStorage if present.
  */
 async function request<T>(
   method: HttpMethod,
@@ -25,8 +26,12 @@ async function request<T>(
     Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
   }
 
+  // Attach JWT token if present in localStorage
+  const token = typeof window !== "undefined" ? tokenStorage.getToken() : null;
+
   const headers: HeadersInit = {
     "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...init.headers,
   };
 
