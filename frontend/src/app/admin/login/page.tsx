@@ -88,6 +88,7 @@ export default function AdminLoginPage() {
                         src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2aKLr7t03shI4-Y6ZNgAcYxdJBIH0tTNo5MbU1wM-TU2rU_AVpKZBRP1NCkHzuwRwgoFzGwweomO3RNMkVnaWClifMeKukdzx9zTy_TmsxugTTLsrix4jKA5ksZS2e6OCVlGJkXvF6a48EZLiCTYMGI61Fh3hgyvsjcA1Q7CUnRQ2VboX3ysybtYRBzh0mdAeUuDHw7yExaY1HIE0Dt1T_RHxVoTZh59lMwGeiR-KvVF4YprN2i98XM8RF6XO1o9ADds22yC8FZ0"
                         alt="Ice cream swirl background"
                         fill
+                        sizes="45vw"
                         className="object-cover"
                         priority
                     />
