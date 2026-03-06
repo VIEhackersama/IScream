@@ -22,6 +22,7 @@ namespace IScream.Data
             Currency = r["Currency"].ToString()!,
             ImageUrl = ReadNullString(r, "ImageUrl"),
             Stock = ReadInt(r, "Stock"),
+            IsActive = ReadBool(r, "IsActive"),
             CreatedAt = ReadDateTime(r, "CreatedAt"),
             UpdatedAt = ReadDateTime(r, "UpdatedAt")
         };
@@ -31,7 +32,9 @@ namespace IScream.Data
         // -----------------------------------------------------------------
         public Task<List<Item>> ListItemsAsync(string? search, int page, int pageSize)
         {
-            var where = string.IsNullOrEmpty(search) ? "" : "WHERE Title LIKE @Search";
+            var where = string.IsNullOrEmpty(search)
+                ? "WHERE IsActive = 1"
+                : "WHERE IsActive = 1 AND Title LIKE @Search";
             var parms = string.IsNullOrEmpty(search)
                 ? new[] { P("@Skip", (page - 1) * pageSize), P("@Take", pageSize) }
                 : new[] { P("@Search", $"%{search}%"), P("@Skip", (page - 1) * pageSize), P("@Take", pageSize) };
@@ -44,7 +47,9 @@ namespace IScream.Data
 
         public async Task<int> CountItemsAsync(string? search)
         {
-            var where = string.IsNullOrEmpty(search) ? "" : "WHERE Title LIKE @Search";
+            var where = string.IsNullOrEmpty(search)
+                ? "WHERE IsActive = 1"
+                : "WHERE IsActive = 1 AND Title LIKE @Search";
             var parms = string.IsNullOrEmpty(search) ? null : new[] { P("@Search", $"%{search}%") };
             return await ExecuteScalarAsync<int?>($"SELECT COUNT(1) FROM public_data.ITEMS {where}", parms) ?? 0;
         }
@@ -72,11 +77,12 @@ namespace IScream.Data
             var rows = await ExecuteAsync("""
                 UPDATE public_data.ITEMS
                 SET Title = @Title, [Description] = @Description, Price = @Price,
-                    ImageUrl = @ImageUrl, Stock = @Stock
+                    Currency = @Currency, ImageUrl = @ImageUrl, Stock = @Stock
                 WHERE Id = @Id
                 """,
                 [P("@Id", item.Id), P("@Title", item.Title), P("@Description", item.Description),
-                 P("@Price", item.Price), P("@ImageUrl", item.ImageUrl), P("@Stock", item.Stock)]);
+                 P("@Price", item.Price), P("@Currency", item.Currency),
+                 P("@ImageUrl", item.ImageUrl), P("@Stock", item.Stock)]);
             return rows > 0;
         }
 
@@ -87,6 +93,14 @@ namespace IScream.Data
                 WHERE Id = @Id AND (Stock + @Delta) >= 0
                 """,
                 [P("@Id", itemId), P("@Delta", delta)]);
+            return rows > 0;
+        }
+
+        public async Task<bool> SoftDeleteItemAsync(Guid id)
+        {
+            var rows = await ExecuteAsync(
+                "UPDATE public_data.ITEMS SET IsActive = 0 WHERE Id = @Id AND IsActive = 1",
+                [P("@Id", id)]);
             return rows > 0;
         }
     }

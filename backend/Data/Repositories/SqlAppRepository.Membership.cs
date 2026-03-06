@@ -45,10 +45,46 @@ namespace IScream.Data
                 "SELECT * FROM public_data.MEMBERSHIP_PLANS WHERE IsActive = 1 ORDER BY Price",
                 null, MapPlan);
 
+        public Task<List<MembershipPlan>> ListAllPlansAsync()
+            => QueryAsync(
+                "SELECT * FROM public_data.MEMBERSHIP_PLANS ORDER BY IsActive DESC, Price",
+                null, MapPlan);
+
         public Task<MembershipPlan?> GetPlanByIdAsync(int id)
             => QueryFirstAsync(
                 "SELECT * FROM public_data.MEMBERSHIP_PLANS WHERE Id = @Id AND IsActive = 1",
                 [P("@Id", id)], MapPlan);
+
+        public Task<MembershipPlan?> GetPlanByIdAdminAsync(int id)
+            => QueryFirstAsync(
+                "SELECT * FROM public_data.MEMBERSHIP_PLANS WHERE Id = @Id",
+                [P("@Id", id)], MapPlan);
+
+        public async Task<int> CreatePlanAsync(MembershipPlan plan)
+        {
+            var id = await ExecuteScalarAsync<int?>("""
+                INSERT INTO public_data.MEMBERSHIP_PLANS (Code, Price, Currency, DurationDays, IsActive)
+                VALUES (@Code, @Price, @Currency, @DurationDays, 1);
+                SELECT SCOPE_IDENTITY();
+                """,
+                [P("@Code", plan.Code), P("@Price", plan.Price), P("@Currency", plan.Currency),
+                 P("@DurationDays", plan.DurationDays)]);
+            return id ?? 0;
+        }
+
+        public async Task<bool> UpdatePlanAsync(MembershipPlan plan)
+        {
+            var rows = await ExecuteAsync("""
+                UPDATE public_data.MEMBERSHIP_PLANS
+                SET Code = @Code, Price = @Price, Currency = @Currency,
+                    DurationDays = @DurationDays, IsActive = @IsActive
+                WHERE Id = @Id
+                """,
+                [P("@Id", plan.Id), P("@Code", plan.Code), P("@Price", plan.Price),
+                 P("@Currency", plan.Currency), P("@DurationDays", plan.DurationDays),
+                 P("@IsActive", plan.IsActive)]);
+            return rows > 0;
+        }
 
         // -----------------------------------------------------------------
         // Subscriptions
@@ -86,5 +122,47 @@ namespace IScream.Data
                 ORDER BY s.CreatedAt DESC
                 """,
                 [P("@UserId", userId)], MapSubscription);
+
+        public async Task<bool> UpdateSubscriptionStatusAsync(Guid id, string status, Guid? paymentId = null)
+        {
+            var rows = await ExecuteAsync("""
+                UPDATE public_data.MEMBERSHIP_SUBSCRIPTIONS
+                SET Status = @Status, PaymentId = COALESCE(@PaymentId, PaymentId)
+                WHERE Id = @Id
+                """,
+                [P("@Id", id), P("@Status", status), P("@PaymentId", paymentId)]);
+            return rows > 0;
+        }
+
+        public async Task<bool> CancelSubscriptionAsync(Guid id, Guid userId)
+        {
+            var rows = await ExecuteAsync("""
+                UPDATE public_data.MEMBERSHIP_SUBSCRIPTIONS
+                SET Status = 'CANCELLED'
+                WHERE Id = @Id AND UserId = @UserId AND Status = 'ACTIVE'
+                """,
+                [P("@Id", id), P("@UserId", userId)]);
+            return rows > 0;
+        }
+
+        public async Task<(List<AppUser> users, int total)> ListActiveMembersAsync(int page, int pageSize)
+        {
+            var users = await QueryAsync("""
+                SELECT DISTINCT u.*
+                FROM public_data.USERS u
+                INNER JOIN public_data.MEMBERSHIP_SUBSCRIPTIONS s ON s.UserId = u.Id
+                WHERE s.Status = 'ACTIVE' AND s.EndDate > SYSDATETIME()
+                ORDER BY u.CreatedAt DESC
+                OFFSET @Skip ROWS FETCH NEXT @Take ROWS ONLY
+                """,
+                [P("@Skip", (page - 1) * pageSize), P("@Take", pageSize)], MapUser);
+            var total = await ExecuteScalarAsync<int?>("""
+                SELECT COUNT(DISTINCT u.Id)
+                FROM public_data.USERS u
+                INNER JOIN public_data.MEMBERSHIP_SUBSCRIPTIONS s ON s.UserId = u.Id
+                WHERE s.Status = 'ACTIVE' AND s.EndDate > SYSDATETIME()
+                """, null) ?? 0;
+            return (users, total);
+        }
     }
 }

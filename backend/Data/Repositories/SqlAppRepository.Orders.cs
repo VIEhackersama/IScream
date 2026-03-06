@@ -62,6 +62,15 @@ namespace IScream.Data
                 """,
                 [P("@Id", id)], MapOrder);
 
+        public Task<ItemOrder?> GetOrderByNoAndEmailAsync(string orderNo, string email)
+            => QueryFirstAsync("""
+                SELECT o.*, i.Title AS ItemTitle, i.ImageUrl AS ItemImageUrl
+                FROM public_data.ITEM_ORDERS o
+                JOIN public_data.ITEMS i ON i.Id = o.ItemId
+                WHERE o.OrderNo = @OrderNo AND o.Email = @Email
+                """,
+                [P("@OrderNo", orderNo), P("@Email", email)], MapOrder);
+
         public Task<List<ItemOrder>> ListOrdersAsync(string? status, int page, int pageSize)
         {
             var where = string.IsNullOrEmpty(status) ? "" : "WHERE o.Status = @Status";

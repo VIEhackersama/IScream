@@ -111,15 +111,71 @@ namespace IScream.Functions
                 if (payment.UserId != claims.Value.userId && claims.Value.role != "ADMIN")
                     return await FunctionHelper.Forbidden(req);
 
-                var body = await req.ReadFromJsonAsync<ConfirmPaymentRequest>();
-                var linkedEntityId = body?.LinkedEntityId;
+                var body = await req.ReadFromJsonAsync<ConfirmPaymentRequest>() ?? new ConfirmPaymentRequest();
 
-                var (ok, error) = await _svc.ConfirmPaymentAsync(id, linkedEntityId);
+                var (ok, error) = await _svc.ConfirmPaymentAsync(id, body);
                 if (!ok) return await FunctionHelper.BadRequest(req, error);
 
                 return await FunctionHelper.OkMessage(req, "Payment confirmed successfully.");
             }
             catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(Confirm)); }
+        }
+
+        [Function("Payments_Fail")]
+        [OpenApiOperation(operationId: "Payments_Fail", tags: new[] { "Admin — Payments" }, Summary = "Fail payment (Admin)", Description = "Marks an INIT payment as FAILED. Requires ADMIN role.")]
+        [OpenApiParameter(name: "id", In = ParameterLocation.Path, Required = true, Type = typeof(Guid), Description = "Payment ID")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Payment marked as failed")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.BadRequest, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Validation error")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Missing or invalid token")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Not an admin")]
+        [OpenApiSecurity("bearer_auth", SecuritySchemeType.Http, Scheme = OpenApiSecuritySchemeType.Bearer, BearerFormat = "JWT")]
+        public async Task<HttpResponseData> Fail(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "management/payments/{id:guid}/fail")] HttpRequestData req,
+            Guid id)
+        {
+            try
+            {
+                var claims = FunctionHelper.ExtractAuthClaims(req);
+                if (claims == null) return await FunctionHelper.Unauthorized(req);
+                if (claims.Value.role != "ADMIN") return await FunctionHelper.Forbidden(req);
+
+                var (ok, error) = await _svc.FailPaymentAsync(id);
+                if (!ok) return await FunctionHelper.BadRequest(req, error);
+
+                return await FunctionHelper.OkMessage(req, "Payment marked as failed.");
+            }
+            catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(Fail)); }
+        }
+
+        [Function("Admin_Payments_List")]
+        [OpenApiOperation(operationId: "Admin_Payments_List", tags: new[] { "Admin — Payments" }, Summary = "List payments (Admin)", Description = "Returns a paginated list of payments. Optionally filter by userId and status. Requires ADMIN role.")]
+        [OpenApiParameter(name: "userId", In = ParameterLocation.Query, Required = false, Type = typeof(Guid), Description = "Filter by user ID")]
+        [OpenApiParameter(name: "status", In = ParameterLocation.Query, Required = false, Type = typeof(string), Description = "Filter by status (INIT, SUCCESS, FAILED)")]
+        [OpenApiParameter(name: "page", In = ParameterLocation.Query, Required = false, Type = typeof(int), Description = "Page number (default: 1)")]
+        [OpenApiParameter(name: "pageSize", In = ParameterLocation.Query, Required = false, Type = typeof(int), Description = "Page size (default: 20)")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(ApiResponse<PagedResult<Payment>>), Description = "Paginated payment list")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Missing or invalid token")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Not an admin")]
+        [OpenApiSecurity("bearer_auth", SecuritySchemeType.Http, Scheme = OpenApiSecuritySchemeType.Bearer, BearerFormat = "JWT")]
+        public async Task<HttpResponseData> AdminList(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "management/payments")] HttpRequestData req)
+        {
+            try
+            {
+                var claims = FunctionHelper.ExtractAuthClaims(req);
+                if (claims == null) return await FunctionHelper.Unauthorized(req);
+                if (claims.Value.role != "ADMIN") return await FunctionHelper.Forbidden(req);
+
+                var qs = System.Web.HttpUtility.ParseQueryString(req.Url.Query);
+                int page = int.TryParse(qs["page"], out var p) ? p : 1;
+                int size = int.TryParse(qs["pageSize"], out var s) ? s : 20;
+                string? stat = qs["status"];
+                Guid? userId = Guid.TryParse(qs["userId"], out var uid) ? uid : null;
+
+                var result = await _svc.ListAsync(userId, stat, page, size);
+                return await FunctionHelper.Ok(req, result);
+            }
+            catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(AdminList)); }
         }
     }
 }

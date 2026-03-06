@@ -79,5 +79,54 @@ namespace IScream.Functions
             }
             catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(AdminList)); }
         }
+        [Function("Admin_Feedbacks_GetById")]
+        [OpenApiOperation(operationId: "Admin_Feedbacks_GetById", tags: new[] { "Admin — Feedback" }, Summary = "Get feedback by ID (Admin)", Description = "Returns a single feedback entry by its GUID. Requires ADMIN role.")]
+        [OpenApiParameter(name: "id", In = ParameterLocation.Path, Required = true, Type = typeof(Guid), Description = "Feedback ID")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(ApiResponse<Feedback>), Description = "Feedback detail")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Feedback not found")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Missing or invalid token")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Not an admin")]
+        [OpenApiSecurity("bearer_auth", SecuritySchemeType.Http, Scheme = OpenApiSecuritySchemeType.Bearer, BearerFormat = "JWT")]
+        public async Task<HttpResponseData> AdminGetById(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "management/feedbacks/{id:guid}")] HttpRequestData req,
+            Guid id)
+        {
+            try
+            {
+                var claims = FunctionHelper.ExtractAuthClaims(req);
+                if (claims == null) return await FunctionHelper.Unauthorized(req);
+                if (claims.Value.role != "ADMIN") return await FunctionHelper.Forbidden(req);
+
+                var (feedback, error) = await _svc.GetByIdAsync(id);
+                if (feedback == null) return await FunctionHelper.NotFound(req, error);
+                return await FunctionHelper.Ok(req, feedback);
+            }
+            catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(AdminGetById)); }
+        }
+
+        [Function("Admin_Feedbacks_MarkRead")]
+        [OpenApiOperation(operationId: "Admin_Feedbacks_MarkRead", tags: new[] { "Admin — Feedback" }, Summary = "Mark feedback as read (Admin)", Description = "Marks a feedback entry as read. Requires ADMIN role.")]
+        [OpenApiParameter(name: "id", In = ParameterLocation.Path, Required = true, Type = typeof(Guid), Description = "Feedback ID")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Feedback marked as read")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Feedback not found")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Missing or invalid token")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Not an admin")]
+        [OpenApiSecurity("bearer_auth", SecuritySchemeType.Http, Scheme = OpenApiSecuritySchemeType.Bearer, BearerFormat = "JWT")]
+        public async Task<HttpResponseData> AdminMarkRead(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "patch", Route = "management/feedbacks/{id:guid}/mark-read")] HttpRequestData req,
+            Guid id)
+        {
+            try
+            {
+                var claims = FunctionHelper.ExtractAuthClaims(req);
+                if (claims == null) return await FunctionHelper.Unauthorized(req);
+                if (claims.Value.role != "ADMIN") return await FunctionHelper.Forbidden(req);
+
+                var (ok, error) = await _svc.MarkReadAsync(id);
+                if (!ok) return await FunctionHelper.NotFound(req, error);
+                return await FunctionHelper.OkMessage(req, "Feedback marked as read.");
+            }
+            catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(AdminMarkRead)); }
+        }
     }
 }

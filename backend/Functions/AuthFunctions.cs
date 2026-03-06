@@ -147,5 +147,32 @@ namespace IScream.Functions
             }
             catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(ChangePassword)); }
         }
+
+        // POST /api/auth/admin/login
+        [Function("Auth_AdminLogin")]
+        [OpenApiOperation(operationId: "Auth_AdminLogin", tags: new[] { "Auth" }, Summary = "Admin login", Description = "Authenticates a user and returns a JWT token only if the account has ADMIN role.")]
+        [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(LoginRequest), Required = true, Description = "Login credentials")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(ApiResponse<LoginResponse>), Description = "Login successful")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.BadRequest, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Invalid credentials")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Account does not have ADMIN role")]
+        public async Task<HttpResponseData> AdminLogin(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "auth/admin/login")] HttpRequestData req)
+        {
+            try
+            {
+                var body = await req.ReadFromJsonAsync<LoginRequest>();
+                if (body == null)
+                    return await FunctionHelper.BadRequest(req, "Invalid request body.");
+
+                var (ok, error, response) = await _auth.LoginAsync(body);
+                if (!ok) return await FunctionHelper.BadRequest(req, error);
+
+                if (response?.User?.Role?.ToUpper() != "ADMIN")
+                    return await FunctionHelper.Forbidden(req);
+
+                return await FunctionHelper.Ok(req, response, "Admin login successful.");
+            }
+            catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(AdminLogin)); }
+        }
     }
 }

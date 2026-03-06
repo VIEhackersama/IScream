@@ -28,6 +28,7 @@ namespace IScream.Data
             PrizeMoney = ReadNullDecimal(r, "PrizeMoney"),
             CertificateUrl = ReadNullString(r, "CertificateUrl"),
             ReviewedByUserId = ReadNullGuid(r, "ReviewedByUserId"),
+            ReviewNote = ReadNullString(r, "ReviewNote"),
             CreatedAt = ReadDateTime(r, "CreatedAt"),
             ReviewedAt = ReadNullDateTime(r, "ReviewedAt")
         };
@@ -75,7 +76,7 @@ namespace IScream.Data
         }
 
         public async Task<bool> ReviewSubmissionAsync(Guid id, bool approve, Guid adminUserId,
-            decimal? prizeMoney, string? certUrl)
+            decimal? prizeMoney, string? certUrl, string? reviewNote)
         {
             var status = approve ? "APPROVED" : "REJECTED";
             var rows = await ExecuteAsync("""
@@ -84,11 +85,12 @@ namespace IScream.Data
                     ReviewedByUserId = @AdminUserId,
                     ReviewedAt = SYSDATETIME(),
                     PrizeMoney = @PrizeMoney,
-                    CertificateUrl = @CertUrl
+                    CertificateUrl = @CertUrl,
+                    ReviewNote = @ReviewNote
                 WHERE Id = @Id AND Status = 'PENDING'
                 """,
                 [P("@Id", id), P("@Status", status), P("@AdminUserId", adminUserId),
-                 P("@PrizeMoney", prizeMoney), P("@CertUrl", certUrl)]);
+                 P("@PrizeMoney", prizeMoney), P("@CertUrl", certUrl), P("@ReviewNote", reviewNote)]);
             return rows > 0;
         }
     }
