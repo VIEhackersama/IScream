@@ -15,7 +15,7 @@ export const routes = {
   contact: "/contact",
   faq: "/faq",
   feedback: "/feedback",
-  privacyPolicy: "/privacy-policy",
+  privacyPolicy: "/privacy-Policy",
   careers: "/careers",
   adminLogin: "/admin/login",
   adminDashboard: "/admin",
