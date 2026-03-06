@@ -54,9 +54,9 @@ namespace IScream.Functions
         }
 
         [Function("Recipes_GetById")]
-        [OpenApiOperation(operationId: "Recipes_GetById", tags: new[] { "Recipes" }, Summary = "Get recipe by ID", Description = "Returns a single recipe by its GUID.")]
+        [OpenApiOperation(operationId: "Recipes_GetById", tags: new[] { "Recipes" }, Summary = "Get recipe by ID", Description = "Returns a single recipe with detail. Ingredients and Procedure are locked unless the caller has an active membership subscription.")]
         [OpenApiParameter(name: "id", In = ParameterLocation.Path, Required = true, Type = typeof(Guid), Description = "Recipe ID")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(ApiResponse<Recipe>), Description = "Recipe detail")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(ApiResponse<RecipeDetailResponse>), Description = "Recipe detail")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Recipe not found")]
         public async Task<HttpResponseData> GetById(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "recipes/{id:guid}")] HttpRequestData req,
@@ -64,9 +64,12 @@ namespace IScream.Functions
         {
             try
             {
-                var (recipe, error) = await _svc.GetByIdAsync(id);
-                if (recipe == null) return await FunctionHelper.NotFound(req, error);
-                return await FunctionHelper.Ok(req, recipe);
+                var claims = FunctionHelper.ExtractAuthClaims(req);
+                Guid? userId = claims?.userId;
+
+                var (detail, error) = await _svc.GetDetailAsync(id, userId);
+                if (detail == null) return await FunctionHelper.NotFound(req, error);
+                return await FunctionHelper.Ok(req, detail);
             }
             catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(GetById)); }
         }

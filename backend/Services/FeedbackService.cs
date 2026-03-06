@@ -12,6 +12,8 @@ namespace IScream.Services
     {
         Task<(Guid id, string error)> SubmitAsync(CreateFeedbackRequest req);
         Task<PagedResult<Feedback>> ListAsync(int page, int pageSize);
+        Task<(Feedback? feedback, string error)> GetByIdAsync(Guid id);
+        Task<(bool ok, string error)> MarkReadAsync(Guid id);
     }
 
     public class FeedbackService : IFeedbackService
@@ -45,6 +47,20 @@ namespace IScream.Services
             var items = await _repo.ListFeedbacksAsync(page, pageSize);
             var total = await _repo.CountFeedbacksAsync();
             return new PagedResult<Feedback> { Items = items, Page = page, PageSize = pageSize, Total = total };
+        }
+
+        public async Task<(Feedback? feedback, string error)> GetByIdAsync(Guid id)
+        {
+            var fb = await _repo.GetFeedbackByIdAsync(id);
+            return fb == null ? (null, "Feedback not found.") : (fb, string.Empty);
+        }
+
+        public async Task<(bool ok, string error)> MarkReadAsync(Guid id)
+        {
+            var fb = await _repo.GetFeedbackByIdAsync(id);
+            if (fb == null) return (false, "Feedback not found.");
+            var ok = await _repo.MarkFeedbackReadAsync(id);
+            return (ok, ok ? string.Empty : "Failed to mark feedback as read.");
         }
     }
 }

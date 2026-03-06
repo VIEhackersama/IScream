@@ -21,6 +21,7 @@ namespace IScream.Data
             Email = ReadNullString(r, "Email"),
             Message = r["Message"].ToString()!,
             IsRegisteredUser = ReadBool(r, "IsRegisteredUser"),
+            IsRead = ReadBool(r, "IsRead"),
             CreatedAt = ReadDateTime(r, "CreatedAt")
         };
 
@@ -51,5 +52,18 @@ namespace IScream.Data
 
         public async Task<int> CountFeedbacksAsync()
             => await ExecuteScalarAsync<int?>("SELECT COUNT(1) FROM public_data.FEEDBACKS", null) ?? 0;
+
+        public Task<Feedback?> GetFeedbackByIdAsync(Guid id)
+            => QueryFirstAsync(
+                "SELECT * FROM public_data.FEEDBACKS WHERE Id = @Id",
+                [P("@Id", id)], MapFeedback);
+
+        public async Task<bool> MarkFeedbackReadAsync(Guid id)
+        {
+            var rows = await ExecuteAsync(
+                "UPDATE public_data.FEEDBACKS SET IsRead = 1 WHERE Id = @Id",
+                [P("@Id", id)]);
+            return rows > 0;
+        }
     }
 }

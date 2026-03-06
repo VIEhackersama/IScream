@@ -12,6 +12,7 @@ namespace IScream.Models
         public string Currency { get; set; } = "VND";
         public string? ImageUrl { get; set; }
         public int Stock { get; set; }
+        public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
     }

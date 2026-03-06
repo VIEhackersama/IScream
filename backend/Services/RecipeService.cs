@@ -12,6 +12,7 @@ namespace IScream.Services
     {
         Task<PagedResult<Recipe>> ListAsync(bool? isActive, int page, int pageSize);
         Task<(Recipe? recipe, string error)> GetByIdAsync(Guid id);
+        Task<(RecipeDetailResponse? detail, string error)> GetDetailAsync(Guid id, Guid? userId);
         Task<(Guid id, string error)> CreateAsync(CreateRecipeRequest req);
         Task<(bool ok, string error)> UpdateAsync(Guid id, UpdateRecipeRequest req);
         Task<(bool ok, string error)> SoftDeleteAsync(Guid id);
@@ -36,6 +37,33 @@ namespace IScream.Services
         {
             var r = await _repo.GetRecipeByIdAsync(id);
             return r == null ? (null, "Recipe not found.") : (r, string.Empty);
+        }
+
+        public async Task<(RecipeDetailResponse? detail, string error)> GetDetailAsync(Guid id, Guid? userId)
+        {
+            var recipe = await _repo.GetRecipeByIdAsync(id);
+            if (recipe == null) return (null, "Recipe not found.");
+
+            bool hasActiveMembership = false;
+            if (userId.HasValue)
+            {
+                var sub = await _repo.GetActiveSubscriptionAsync(userId.Value);
+                hasActiveMembership = sub != null;
+            }
+
+            var response = new RecipeDetailResponse
+            {
+                Id = recipe.Id,
+                FlavorName = recipe.FlavorName,
+                ShortDescription = recipe.ShortDescription,
+                ImageUrl = recipe.ImageUrl,
+                IsActive = recipe.IsActive,
+                CreatedAt = recipe.CreatedAt,
+                IsLocked = !hasActiveMembership,
+                Ingredients = hasActiveMembership ? recipe.Ingredients : null,
+                Procedure = hasActiveMembership ? recipe.Procedure : null
+            };
+            return (response, string.Empty);
         }
 
         public async Task<(Guid id, string error)> CreateAsync(CreateRecipeRequest req)

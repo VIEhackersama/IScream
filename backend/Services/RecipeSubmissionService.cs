@@ -77,7 +77,7 @@ namespace IScream.Services
                 return (false, "CertificateUrl is required when PrizeMoney is provided.");
 
             var ok = await _repo.ReviewSubmissionAsync(
-                id, req.Approve, req.AdminUserId, req.PrizeMoney, req.CertificateUrl);
+                id, req.Approve, req.AdminUserId, req.PrizeMoney, req.CertificateUrl, req.ReviewNote);
 
             return (ok, ok ? string.Empty : "Review failed. Submission may have already been processed.");
         }
