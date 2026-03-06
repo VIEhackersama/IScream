@@ -18,6 +18,14 @@ const variantStyles: Record<ButtonVariant, string> = {
   ghost: "bg-transparent hover:bg-primary/10 text-text-main dark:text-white",
 };
 
+export const buttonVariants = ({ variant = "primary", className }: { variant?: ButtonVariant; className?: string } = {}) => {
+  return cn(
+    "inline-flex cursor-pointer items-center justify-center rounded-full font-bold tracking-wide transition-all",
+    variantStyles[variant],
+    className
+  );
+};
+
 export function Button({
   variant = "primary",
   children,
@@ -26,11 +34,7 @@ export function Button({
 }: ButtonProps) {
   return (
     <button
-      className={cn(
-        "inline-flex cursor-pointer items-center justify-center rounded-full font-bold tracking-wide transition-all",
-        variantStyles[variant],
-        className,
-      )}
+      className={buttonVariants({ variant, className })}
       {...props}
     >
       {children}

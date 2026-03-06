@@ -11,6 +11,7 @@ const navLinks: NavLink[] = [
   { label: "Home", href: routes.home },
   { label: "Free Recipes", href: routes.recipes },
   { label: "Order Books", href: routes.orderBooks },
+  { label: "Premium", href: routes.membership },
   { label: "Add Recipe", href: routes.addRecipe },
 ];
 

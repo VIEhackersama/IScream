@@ -1,4 +1,5 @@
 // app/careers/page.tsx
+import Link from "next/link";
 
 export default function CareersPage() {
   const heroBg =
@@ -99,9 +100,9 @@ export default function CareersPage() {
                       The heart of our parlor. You&apos;ll craft beautiful cones, engage with fans, and keep the vibes
                       high.
                     </p>
-                    <button className="w-full bg-primary hover:bg-primary/90 text-slate-900 font-bold py-3 rounded-full transition-colors flex items-center justify-center gap-2">
+                    <Link href="/register" className="w-full bg-primary hover:bg-primary/90 text-slate-900 font-bold py-3 rounded-full transition-colors flex items-center justify-center gap-2">
                       Apply Now <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                    </button>
+                    </Link>
                   </div>
                 </div>
 
@@ -122,9 +123,9 @@ export default function CareersPage() {
                     <p className="text-slate-600 dark:text-slate-400 text-sm mb-6 flex-grow">
                       Work in our lab to create the next viral sensation. Chemistry meets deliciousness.
                     </p>
-                    <button className="w-full bg-slate-200 dark:bg-slate-800 hover:bg-primary text-slate-900 dark:text-slate-100 dark:hover:text-slate-900 font-bold py-3 rounded-full transition-colors flex items-center justify-center gap-2">
+                    <Link href="/register" className="w-full bg-slate-200 dark:bg-slate-800 hover:bg-primary text-slate-900 dark:text-slate-100 dark:hover:text-slate-900 font-bold py-3 rounded-full transition-colors flex items-center justify-center gap-2">
                       Submit Portfolio <span className="material-symbols-outlined text-sm">science</span>
-                    </button>
+                    </Link>
                   </div>
                 </div>
 
@@ -146,9 +147,9 @@ export default function CareersPage() {
                       Bring the parlor to our customers&apos; doors. Speed, safety, and a smile are your tools of the
                       trade.
                     </p>
-                    <button className="w-full bg-slate-200 dark:bg-slate-800 hover:bg-primary text-slate-900 dark:text-slate-100 dark:hover:text-slate-900 font-bold py-3 rounded-full transition-colors flex items-center justify-center gap-2">
+                    <Link href="/register" className="w-full bg-slate-200 dark:bg-slate-800 hover:bg-primary text-slate-900 dark:text-slate-100 dark:hover:text-slate-900 font-bold py-3 rounded-full transition-colors flex items-center justify-center gap-2">
                       Start Rolling <span className="material-symbols-outlined text-sm">delivery_dining</span>
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -217,9 +218,9 @@ export default function CareersPage() {
                 We&apos;re always looking for stars. Even if you don&apos;t see your perfect role, send us a note about
                 why you&apos;d be a great fit for the Mr. A family.
               </p>
-              <button className="bg-white text-primary font-bold text-lg px-10 py-4 rounded-full hover:scale-105 transition-transform relative z-10">
+              <Link href="/register" className="inline-block bg-white text-primary font-bold text-lg px-10 py-4 rounded-full hover:scale-105 transition-transform relative z-10">
                 General Application
-              </button>
+              </Link>
             </section>
           </main>
         </div>

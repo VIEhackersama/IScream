@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { Badge, Button, MaterialIcon } from "@/components/ui";
 
 const socialProofAvatars = [
@@ -45,12 +46,14 @@ export function HeroSection() {
             <Button className="h-12 flex-1 px-8 text-base shadow-lg shadow-primary/25 transition-all hover:scale-105 hover:shadow-primary/40 sm:flex-none">
               Browse Recipes
             </Button>
-            <Button
-              variant="outline"
-              className="h-12 flex-1 border-primary/30 px-8 text-base hover:border-primary hover:bg-primary/5 sm:flex-none"
-            >
-              Join the Club
-            </Button>
+            <Link href="/register" className="flex-1 sm:flex-none">
+              <Button
+                variant="outline"
+                className="h-12 w-full border-primary/30 px-8 text-base hover:border-primary hover:bg-primary/5"
+              >
+                Join the Club
+              </Button>
+            </Link>
           </div>
 
           {/* Social proof */}
