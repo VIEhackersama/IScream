@@ -10,14 +10,24 @@ import type { MembershipPlan } from "@/types";
 
 export default function MembershipPage() {
     const router = useRouter();
-    const { user, isLoggedIn } = useAuth();
+    const { user, isLoggedIn, loading: authLoading } = useAuth();
     const [loading, setLoading] = useState(false);
     const [plans, setPlans] = useState<MembershipPlan[]>([]);
     const [fetchingPlans, setFetchingPlans] = useState(true);
 
     useEffect(() => {
+        if (authLoading) return; // Wait for auth state
+
         const fetchPlans = async () => {
             try {
+                if (isLoggedIn) {
+                    const subStatus = await membershipService.getStatus();
+                    if (subStatus?.status === "ACTIVE") {
+                        router.push("/membership/vip");
+                        return;
+                    }
+                }
+
                 const data = await membershipService.getPlans();
                 setPlans(data.filter(p => p.isActive));
             } catch (error) {
@@ -27,7 +37,7 @@ export default function MembershipPage() {
             }
         };
         fetchPlans();
-    }, []);
+    }, [isLoggedIn, authLoading, router]);
 
     // Navigate to checkout with the selected plan
     const handleSubscribe = async (planId: number) => {
@@ -39,6 +49,14 @@ export default function MembershipPage() {
         setLoading(true);
         router.push(`/membership/checkout?plan=${planId}`);
     };
+
+    if (authLoading || fetchingPlans) {
+        return (
+            <div className="flex justify-center items-center min-h-[60vh]">
+                <MaterialIcon name="sync" className="animate-spin text-4xl text-primary" />
+            </div>
+        );
+    }
 
     return (
         <div className="flex w-full flex-col items-center px-4 py-16 md:py-24 max-w-[1200px] mx-auto">
