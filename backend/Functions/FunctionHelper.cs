@@ -53,7 +53,7 @@ namespace IScream.Functions
 
                 var sub = principal.FindFirst("sub")?.Value
                         ?? principal.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-                var role = principal.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "USER";
+                var role = principal.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "MEMBER";
 
                 if (sub == null || !Guid.TryParse(sub, out var userId)) return null;
                 return (userId, role);

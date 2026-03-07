@@ -46,7 +46,7 @@ export interface UserInfo {
   username: string;
   fullName?: string;
   email?: string;
-  role: "USER" | "ADMIN";
+  role: "MEMBER" | "ADMIN";
 }
 
 export interface LoginResponse {

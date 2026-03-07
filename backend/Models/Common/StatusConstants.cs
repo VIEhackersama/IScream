@@ -43,7 +43,7 @@ namespace IScream.Models
 
     public static class UserRole
     {
-        public const string User = "USER";
+        public const string Member = "MEMBER";
         public const string Admin = "ADMIN";
     }
 }
