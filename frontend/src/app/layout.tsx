@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Nunito, Playfair_Display } from "next/font/google";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { AuthProvider } from "@/context/AuthContext";
 import { siteConfig } from "@/config";
 import "./globals.css";
 
@@ -33,7 +34,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="light" suppressHydrationWarning>
+    <html lang="en" className="light" suppressHydrationWarning data-scroll-behavior="smooth">
       <head>
         {/* Material Symbols Outlined */}
         <link
@@ -44,13 +45,15 @@ export default function RootLayout({
       <body
         className={`${nunito.variable} ${playfair.variable} font-display bg-background-light dark:bg-background-dark text-text-main dark:text-background-light overflow-x-hidden antialiased selection:bg-primary selection:text-white`}
       >
-        <div className="relative flex h-auto min-h-screen w-full flex-col">
-          <Navbar />
-          <main className="flex flex-1 flex-col items-center w-full px-4 md:px-10 pb-20">
-            {children}
-          </main>
-          <Footer />
-        </div>
+        <AuthProvider>
+          <div className="relative flex h-auto min-h-screen w-full flex-col">
+            <Navbar />
+            <main className="flex flex-1 flex-col items-center w-full px-4 md:px-10 pb-20">
+              {children}
+            </main>
+            <Footer />
+          </div>
+        </AuthProvider>
       </body>
     </html>
   );

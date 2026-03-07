@@ -6,7 +6,8 @@ export function BookCtaSection() {
     <section
       className="relative mt-10 overflow-hidden rounded-[2.5rem] shadow-xl"
       style={{
-        background: "linear-gradient(135deg, #fffbe6 0%, #fff5d6 35%, #fff0f0 70%, #fff9f0 100%)",
+        background:
+          "linear-gradient(135deg, #fffbe6 0%, #fff5d6 35%, #fff0f0 70%, #fff9f0 100%)",
       }}
     >
       {/* Decorative blobs */}
@@ -24,8 +25,7 @@ export function BookCtaSection() {
           </Badge>
 
           <h2 className="font-serif-display mb-4 text-3xl font-black leading-[1.1] text-text-main md:text-5xl">
-            Mr. A&apos;s Secret{" "}
-            <br className="hidden md:block" />
+            IScream&apos;s Secret <br className="hidden md:block" />
             Recipes Book
           </h2>
 
@@ -48,8 +48,14 @@ export function BookCtaSection() {
               { icon: "verified", text: "Official Edition" },
               { icon: "local_shipping", text: "Free Shipping" },
             ].map((item) => (
-              <div key={item.text} className="flex items-center gap-1.5 text-sm font-semibold text-text-muted">
-                <MaterialIcon name={item.icon} className="text-[16px] text-gold" />
+              <div
+                key={item.text}
+                className="flex items-center gap-1.5 text-sm font-semibold text-text-muted"
+              >
+                <MaterialIcon
+                  name={item.icon}
+                  className="text-[16px] text-gold"
+                />
                 {item.text}
               </div>
             ))}
@@ -61,7 +67,7 @@ export function BookCtaSection() {
           <div className="relative w-3/4 rotate-3 overflow-hidden rounded-r-2xl rounded-l-md border-l-[12px] border-l-gray-800 shadow-[0_25px_60px_-12px_rgba(0,0,0,0.25)] transition-all duration-500 hover:rotate-0 hover:shadow-[0_30px_70px_-10px_rgba(238,43,82,0.2)] dark:border-l-gray-600">
             <Image
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuD0kCUg26eJsGZ5vAbdhn3OcuDs-32LE9KV-rDU-lpGDOyql6O1rDm3hEnSwJ59CDhRCSIAYBrYhu62_wsJ1GGhEo7Cg6QyXmPUEIxp_dsXbzMhf923bFudCnx2SFKr37yH8coHFFt-fdAWWuwLykR5sQupUQ2aC2slnMpDCt53XUrnpRhKJlCDG07_EOf5-L_EEa1yySWo9JwpMhiYtQxA6mpsjaTV-dX3auVWhUVuDK1IC89ZE0Mam0bzv5-qPsWcZfemqXXCfRo"
-              alt="Cover of Mr. A's Secret Recipes Book featuring a stack of ice cream cones"
+              alt="Cover of IScream's Secret Recipes Book featuring a stack of ice cream cones"
               width={400}
               height={533}
               className="aspect-[3/4] w-full object-cover"

@@ -21,5 +21,6 @@ namespace IScream.Models
         public bool Approve { get; set; }
         public decimal? PrizeMoney { get; set; }
         public string? CertificateUrl { get; set; }
+        public string? ReviewNote { get; set; }
     }
 }

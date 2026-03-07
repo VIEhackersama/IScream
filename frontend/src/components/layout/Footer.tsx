@@ -15,7 +15,7 @@ const footerSections: FooterSection[] = [
   {
     title: "Company",
     links: [
-      { label: "About Mr. A", href: routes.about },
+      { label: "About IScream", href: routes.about },
       { label: "Careers", href: routes.careers },
       { label: "Privacy Policy", href: routes.privacyPolicy },
     ],
@@ -24,9 +24,7 @@ const footerSections: FooterSection[] = [
 
 export function Footer() {
   return (
-    <footer
-      className="mt-10 w-full border-t border-gray-200 bg-white pt-12"
-    >
+    <footer className="mt-10 w-full border-t border-gray-200 bg-white pt-12">
       <div className="px-4 md:px-10">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4 mb-12">
           {/* Brand column */}
@@ -34,7 +32,9 @@ export function Footer() {
             <Link href={routes.home} className="mb-5 flex items-center gap-2">
               <div
                 className="flex size-9 items-center justify-center rounded-full text-white"
-                style={{ background: "linear-gradient(135deg, #ee2b52, #ff8fa3)" }}
+                style={{
+                  background: "linear-gradient(135deg, #ee2b52, #ff8fa3)",
+                }}
               >
                 <MaterialIcon name="icecream" filled className="text-[18px]" />
               </div>
@@ -109,7 +109,8 @@ export function Footer() {
             . All rights reserved.
           </p>
           <p className="mt-2 text-xs text-text-muted md:mt-0">
-            Made with <span className="text-primary">♥</span> for ice cream lovers
+            Made with <span className="text-primary">♥</span> for ice cream
+            lovers
           </p>
         </div>
       </div>

@@ -25,11 +25,11 @@ namespace IScream.Services
         public async Task<(Guid id, string error)> SubmitAsync(CreateSubmissionRequest req)
         {
             if (string.IsNullOrWhiteSpace(req.Title) || req.Title.Trim().Length < 3)
-                return (Guid.Empty, "Title phải có ít nhất 3 ký tự.");
+                return (Guid.Empty, "Title must be at least 3 characters.");
 
             // Guest submission requires at least Name or Email
             if (req.UserId == null && string.IsNullOrWhiteSpace(req.Name) && string.IsNullOrWhiteSpace(req.Email))
-                return (Guid.Empty, "Guest cần cung cấp Name hoặc Email.");
+                return (Guid.Empty, "Guest must provide a Name or Email.");
 
             var sub = new RecipeSubmission
             {
@@ -51,7 +51,7 @@ namespace IScream.Services
         public async Task<(RecipeSubmission? sub, string error)> GetByIdAsync(Guid id)
         {
             var sub = await _repo.GetSubmissionByIdAsync(id);
-            return sub == null ? (null, "Submission không tồn tại.") : (sub, string.Empty);
+            return sub == null ? (null, "Submission not found.") : (sub, string.Empty);
         }
 
         public async Task<PagedResult<RecipeSubmission>> ListAsync(string? status, int page, int pageSize)
@@ -60,26 +60,26 @@ namespace IScream.Services
             pageSize = Math.Clamp(pageSize, 1, 100);
             var items = await _repo.ListSubmissionsAsync(status, page, pageSize);
             var total = await _repo.CountSubmissionsAsync(status);
-            return new PagedResult<RecipeSubmission> { Items = items, Page = page, PageSize = pageSize, Total = total };
+            return new PagedResult<RecipeSubmission> { Items = items, Page = page, PageSize = pageSize, TotalCount = total };
         }
 
         public async Task<(bool ok, string error)> ReviewAsync(Guid id, ReviewSubmissionRequest req)
         {
             if (req.AdminUserId == Guid.Empty)
-                return (false, "AdminUserId không hợp lệ.");
+                return (false, "Invalid AdminUserId.");
 
             var sub = await _repo.GetSubmissionByIdAsync(id);
-            if (sub == null) return (false, "Submission không tồn tại.");
-            if (sub.Status != "PENDING") return (false, $"Submission đã được xử lý ({sub.Status}).");
+            if (sub == null) return (false, "Submission not found.");
+            if (sub.Status != "PENDING") return (false, $"Submission has already been processed ({sub.Status}).");
 
             // If approving with prize money, certUrl should be provided
             if (req.Approve && req.PrizeMoney.HasValue && string.IsNullOrWhiteSpace(req.CertificateUrl))
-                return (false, "CertificateUrl bắt buộc khi có PrizeMoney.");
+                return (false, "CertificateUrl is required when PrizeMoney is provided.");
 
             var ok = await _repo.ReviewSubmissionAsync(
-                id, req.Approve, req.AdminUserId, req.PrizeMoney, req.CertificateUrl);
+                id, req.Approve, req.AdminUserId, req.PrizeMoney, req.CertificateUrl, req.ReviewNote);
 
-            return (ok, ok ? string.Empty : "Review thất bại. Submission có thể đã được xử lý.");
+            return (ok, ok ? string.Empty : "Review failed. Submission may have already been processed.");
         }
     }
 }

@@ -11,6 +11,7 @@ namespace IScream.Models
         public string? Email { get; set; }
         public string Message { get; set; } = null!;
         public bool IsRegisteredUser { get; set; }
+        public bool IsRead { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }

@@ -18,6 +18,7 @@ namespace IScream.Models
         public decimal? PrizeMoney { get; set; }
         public string? CertificateUrl { get; set; }
         public Guid? ReviewedByUserId { get; set; }
+        public string? ReviewNote { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? ReviewedAt { get; set; }
     }

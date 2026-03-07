@@ -15,5 +15,10 @@ namespace IScream.Models
     {
         /// <summary>Order or Subscription to link after payment SUCCESS</summary>
         public Guid? LinkedEntityId { get; set; }
+
+        // --- Mock card validation fields ---
+        public string? CardNumber { get; set; }
+        public string? Expiry { get; set; }  // MM/YY
+        public string? Cvv { get; set; }
     }
 }

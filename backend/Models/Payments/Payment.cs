@@ -11,6 +11,7 @@ namespace IScream.Models
         public string Currency { get; set; } = "VND";
         public string Type { get; set; } = null!;
         public string Status { get; set; } = "INIT";  // INIT | SUCCESS | FAILED
+        public string? MetaJson { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }

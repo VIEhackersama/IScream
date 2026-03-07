@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { Badge, Button, MaterialIcon } from "@/components/ui";
 
 const socialProofAvatars = [
@@ -9,8 +10,7 @@ const socialProofAvatars = [
 
 export function HeroSection() {
   return (
-    <section className="relative mt-6 md:mt-10 overflow-hidden rounded-[2.5rem] bg-white px-8 py-12 md:py-16 md:px-14"
-    >
+    <section className="relative mt-6 md:mt-10 overflow-hidden rounded-[2.5rem] bg-white px-8 py-12 md:py-16 md:px-14">
       {/* Subtle decorative circle — toned down */}
       <div className="pointer-events-none absolute -top-20 -right-20 h-72 w-72 rounded-full bg-gray-100/80 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-16 -left-16 h-56 w-56 rounded-full bg-gray-100/80 blur-3xl" />
@@ -26,17 +26,14 @@ export function HeroSection() {
             </Badge>
 
             {/* Heading with Playfair Display */}
-            <h1
-              className="font-serif-display text-5xl font-black leading-[1.1] tracking-tight text-text-main md:text-6xl"
-            >
-              Scoops of{" "}
-              <span className="gradient-text">Happiness</span>
-              {" "}in Every Bowl!
+            <h1 className="font-serif-display text-5xl font-black leading-[1.1] tracking-tight text-text-main md:text-6xl">
+              Scoops of <span className="gradient-text">Happiness</span> in
+              Every Bowl!
             </h1>
 
             <p className="max-w-[480px] text-lg font-medium leading-relaxed text-text-muted">
-              Discover secret recipes, order Mr. A&apos;s famous books, or share
-              your own frozen creations with our sweet community.
+              Discover secret recipes, order IScream&apos;s famous books, or
+              share your own frozen creations with our sweet community.
             </p>
           </div>
 
@@ -45,12 +42,14 @@ export function HeroSection() {
             <Button className="h-12 flex-1 px-8 text-base shadow-lg shadow-primary/25 transition-all hover:scale-105 hover:shadow-primary/40 sm:flex-none">
               Browse Recipes
             </Button>
-            <Button
-              variant="outline"
-              className="h-12 flex-1 border-primary/30 px-8 text-base hover:border-primary hover:bg-primary/5 sm:flex-none"
-            >
-              Join the Club
-            </Button>
+            <Link href="/register" className="flex-1 sm:flex-none">
+              <Button
+                variant="outline"
+                className="h-12 w-full border-primary/30 px-8 text-base hover:border-primary hover:bg-primary/5"
+              >
+                Join the Club
+              </Button>
+            </Link>
           </div>
 
           {/* Social proof */}
@@ -68,7 +67,8 @@ export function HeroSection() {
               ))}
             </div>
             <p className="text-sm font-semibold text-text-muted">
-              Join <span className="text-primary font-bold">10k+</span> ice cream lovers
+              Join <span className="text-primary font-bold">10k+</span> ice
+              cream lovers
             </p>
           </div>
         </div>

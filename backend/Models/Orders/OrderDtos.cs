@@ -17,4 +17,10 @@ namespace IScream.Models
     {
         public string Status { get; set; } = null!; // SHIPPED | DELIVERED | CANCELLED
     }
+
+    public class OrderTrackRequest
+    {
+        public string OrderNo { get; set; } = null!;
+        public string Email { get; set; } = null!;
+    }
 }

@@ -7,7 +7,7 @@ export const routes = {
   home: "/",
   recipes: "/recipes",
   orderBooks: "/order-books",
-  addRecipe: "/add-recipe",
+  addRecipe: "/submit",
   login: "/login",
   register: "/register",
   profile: "/profile",
@@ -15,6 +15,8 @@ export const routes = {
   contact: "/contact",
   faq: "/faq",
   feedback: "/feedback",
-  privacyPolicy: "/privacy-policy",
+  privacyPolicy: "/privacy-Policy",
   careers: "/careers",
+  adminLogin: "/admin/login",
+  adminDashboard: "/admin",
 } as const;

@@ -12,6 +12,7 @@ using IScream.Services;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.Logging;
 using System.Net;
@@ -40,12 +41,12 @@ namespace IScream.Functions
             try
             {
                 var body = await req.ReadFromJsonAsync<CreateOrderRequest>();
-                if (body == null) return await FunctionHelper.BadRequest(req, "Body không hợp lệ.");
+                if (body == null) return await FunctionHelper.BadRequest(req, "Invalid request body.");
 
                 var (orderId, error) = await _svc.PlaceOrderAsync(body);
                 if (orderId == Guid.Empty) return await FunctionHelper.BadRequest(req, error);
 
-                return await FunctionHelper.Created(req, new { orderId }, "Đặt hàng thành công.");
+                return await FunctionHelper.Created(req, new { orderId }, "Order placed successfully.");
             }
             catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(PlaceOrder)); }
         }
@@ -68,6 +69,52 @@ namespace IScream.Functions
             catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(GetById)); }
         }
 
+        [Function("Orders_Track")]
+        [OpenApiOperation(operationId: "Orders_Track", tags: new[] { "Orders" }, Summary = "Track order by OrderNo + Email", Description = "Allows guests or users to look up an order by order number and the email used at checkout. No authentication required.")]
+        [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(OrderTrackRequest), Required = true, Description = "OrderNo and Email")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(ApiResponse<ItemOrder>), Description = "Order detail")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Order not found")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.BadRequest, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Validation error")]
+        public async Task<HttpResponseData> TrackOrder(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "orders/track")] HttpRequestData req)
+        {
+            try
+            {
+                var body = await req.ReadFromJsonAsync<OrderTrackRequest>();
+                if (body == null) return await FunctionHelper.BadRequest(req, "Invalid request body.");
+
+                var (order, error) = await _svc.TrackOrderAsync(body.OrderNo, body.Email);
+                if (order == null) return await FunctionHelper.NotFound(req, error);
+                return await FunctionHelper.Ok(req, order);
+            }
+            catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(TrackOrder)); }
+        }
+
+        [Function("Admin_Orders_GetById")]
+        [OpenApiOperation(operationId: "Admin_Orders_GetById", tags: new[] { "Admin — Orders" }, Summary = "Get order by ID (Admin)", Description = "Returns a single order by its GUID. Requires ADMIN role.")]
+        [OpenApiParameter(name: "id", In = ParameterLocation.Path, Required = true, Type = typeof(Guid), Description = "Order ID")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(ApiResponse<ItemOrder>), Description = "Order detail")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Order not found")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Missing or invalid token")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Not an admin")]
+        [OpenApiSecurity("bearer_auth", SecuritySchemeType.Http, Scheme = OpenApiSecuritySchemeType.Bearer, BearerFormat = "JWT")]
+        public async Task<HttpResponseData> AdminGetById(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "management/orders/{id:guid}")] HttpRequestData req,
+            Guid id)
+        {
+            try
+            {
+                var claims = FunctionHelper.ExtractAuthClaims(req);
+                if (claims == null) return await FunctionHelper.Unauthorized(req);
+                if (claims.Value.role != "ADMIN") return await FunctionHelper.Forbidden(req);
+
+                var (order, error) = await _svc.GetByIdAsync(id);
+                if (order == null) return await FunctionHelper.NotFound(req, error);
+                return await FunctionHelper.Ok(req, order);
+            }
+            catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(AdminGetById)); }
+        }
+
         [Function("Admin_Orders_List")]
         [OpenApiOperation(operationId: "Admin_Orders_List", tags: new[] { "Admin — Orders" }, Summary = "List orders (Admin)", Description = "Returns a paginated list of orders with optional status filter. Requires ADMIN role.")]
         [OpenApiParameter(name: "status", In = ParameterLocation.Query, Required = false, Type = typeof(string), Description = "Filter by status (PENDING, PAID, SHIPPED, DELIVERED, CANCELLED)")]
@@ -76,6 +123,7 @@ namespace IScream.Functions
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(ApiResponse<PagedResult<ItemOrder>>), Description = "Paginated order list")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Missing or invalid token")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Not an admin")]
+        [OpenApiSecurity("bearer_auth", SecuritySchemeType.Http, Scheme = OpenApiSecuritySchemeType.Bearer, BearerFormat = "JWT")]
         public async Task<HttpResponseData> AdminList(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "management/orders")] HttpRequestData req)
         {
@@ -104,6 +152,7 @@ namespace IScream.Functions
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.BadRequest, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Invalid status")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Missing or invalid token")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(ApiResponse), Description = "Not an admin")]
+        [OpenApiSecurity("bearer_auth", SecuritySchemeType.Http, Scheme = OpenApiSecuritySchemeType.Bearer, BearerFormat = "JWT")]
         public async Task<HttpResponseData> UpdateStatus(
             [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "management/orders/{id:guid}/status")] HttpRequestData req,
             Guid id)
@@ -116,12 +165,12 @@ namespace IScream.Functions
 
                 var body = await req.ReadFromJsonAsync<UpdateOrderStatusRequest>();
                 if (body == null || string.IsNullOrWhiteSpace(body.Status))
-                    return await FunctionHelper.BadRequest(req, "Status không hợp lệ.");
+                    return await FunctionHelper.BadRequest(req, "Invalid status.");
 
                 var (ok, error) = await _svc.UpdateStatusAsync(id, body.Status);
                 if (!ok) return await FunctionHelper.BadRequest(req, error);
 
-                return await FunctionHelper.OkMessage(req, "Cập nhật trạng thái đơn hàng thành công.");
+                return await FunctionHelper.OkMessage(req, "Order status updated successfully.");
             }
             catch (Exception ex) { return await FunctionHelper.ServerError(req, ex, _log, nameof(UpdateStatus)); }
         }

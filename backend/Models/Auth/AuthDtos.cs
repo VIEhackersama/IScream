@@ -47,4 +47,21 @@ namespace IScream.Models
         public string? Email { get; set; }
         public string Role { get; set; } = null!;
     }
+
+    /// <summary>Lightweight user record returned by admin list endpoint</summary>
+    public class UserSummary
+    {
+        public Guid Id { get; set; }
+        public string Username { get; set; } = null!;
+        public string? FullName { get; set; }
+        public string? Email { get; set; }
+        public string Role { get; set; } = null!;
+        public bool IsActive { get; set; }
+        public DateTime CreatedAt { get; set; }
+    }
+
+    public class SetUserActiveRequest
+    {
+        public bool IsActive { get; set; }
+    }
 }

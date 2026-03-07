@@ -4,16 +4,16 @@
  */
 
 export const siteConfig = {
-  name: "Mr. A's Scoop Shop",
-  shortName: "Mr. A's",
+  name: "ISCREAM",
+  shortName: "ISC",
   description:
-    "Discover secret recipes, order Mr. A's famous books, or share your own frozen creations with our sweet community.",
+    "Discover secret recipes, order IScream's famous books, or share your own frozen creations with our sweet community.",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
   ogImage: "/og-image.png",
   links: {
     twitter: "#",
     instagram: "#",
   },
-  founder: "Mr. A",
+  founder: "D.Pham",
   foundedYear: 2010,
 } as const;
