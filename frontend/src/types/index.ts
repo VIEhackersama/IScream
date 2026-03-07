@@ -142,7 +142,7 @@ export interface User {
   username: string;
   fullName?: string;
   email?: string;
-  role: "USER" | "ADMIN";
+  role: "MEMBER" | "ADMIN";
 }
 
 /* ===== Navigation ===== */

@@ -66,7 +66,7 @@ namespace IScream.Services
                 Email = string.IsNullOrWhiteSpace(req.Email) ? null : req.Email.Trim().ToLower(),
                 PasswordHash = BC.HashPassword(req.Password),
                 FullName = req.FullName?.Trim(),
-                Role = "USER"
+                Role = "MEMBER"
             };
 
             var id = await _repo.CreateUserAsync(user);
